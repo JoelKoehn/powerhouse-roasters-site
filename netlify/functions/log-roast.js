@@ -10,10 +10,13 @@ exports.handler = async (event) => {
   try {
     connectLambda(event);
     const body = JSON.parse(event.body || "{}");
-    const { blend, lbsRoasted, date, roastType, orderId, notes } = body;
+    const { blend, lbsRoasted, bagsFilled, date, roastType, orderId, notes } = body;
 
     if (!blend || !lbsRoasted || lbsRoasted <= 0) {
       return { statusCode: 400, body: JSON.stringify({ error: "blend and lbsRoasted required" }) };
+    }
+    if (roastType === "shelf" && (!bagsFilled || bagsFilled <= 0)) {
+      return { statusCode: 400, body: JSON.stringify({ error: "bagsFilled required for shelf roasts" }) };
     }
     if (!["shelf", "order"].includes(roastType)) {
       return { statusCode: 400, body: JSON.stringify({ error: "roastType must be shelf or order" }) };
@@ -59,16 +62,17 @@ exports.handler = async (event) => {
       inventory.green[origin] = parseFloat(((inventory.green[origin] || 0) - lbs).toFixed(2));
     }
 
-    // For shelf roast: add to shelf inventory
+    // For shelf roast: add bags to shelf inventory
     if (roastType === "shelf") {
       if (!inventory.shelf[blend]) inventory.shelf[blend] = 0;
-      inventory.shelf[blend] = parseFloat((inventory.shelf[blend] + lbsRoasted).toFixed(2));
+      inventory.shelf[blend] = Math.round(inventory.shelf[blend] + Number(bagsFilled));
     }
 
     const session = {
       id: `roast_${Date.now()}`,
       blend,
       lbsRoasted: Number(lbsRoasted),
+      bagsFilled: roastType === "shelf" ? Number(bagsFilled) : null,
       date: date || new Date().toISOString().split("T")[0],
       roastType,
       orderId: orderId || null,

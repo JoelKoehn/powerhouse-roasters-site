@@ -398,8 +398,12 @@
             </select>
           </div>
           <div class="field-group">
-            <label>Lbs Roasted</label>
+            <label>Lbs Roasted (green weight in)</label>
             <input id="roast-lbs" type="number" min="0.1" step="0.1" placeholder="e.g. 20" />
+          </div>
+          <div class="field-group" id="bags-filled-field">
+            <label>Bags Filled (shelf stock out)</label>
+            <input id="roast-bags" type="number" min="1" step="1" placeholder="e.g. 24" />
           </div>
           <div class="field-group">
             <label>Date</label>
@@ -445,8 +449,8 @@
 
         <div class="dash-card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.9rem;">
-            <h2 style="margin:0;">Shelf Stock (Roasted)</h2>
-            <button class="btn btn-sm btn-dark" onclick="openInvEdit('shelf')">Edit</button>
+            <h2 style="margin:0;">Shelf Stock (bags)</h2>
+            <button class="btn btn-sm btn-dark" onclick="openInvEdit('shelf')">Edit All</button>
           </div>
           <div id="inv-shelf-bars"></div>
         </div>
@@ -721,19 +725,52 @@
       document.getElementById(containerId).innerHTML = `<div class="empty-state">No items tracked yet.</div>`;
       return;
     }
+    const isShelf = type === "shelf";
+    const unit = isShelf ? "bags" : "lbs";
     const max = Math.max(...entries.map(([, v]) => v), lowThreshold * 2, 1);
-    document.getElementById(containerId).innerHTML = entries.map(([name, lbs]) => {
-      const pct = Math.min(100, (lbs / max) * 100);
-      const isLow = lbs < lowThreshold;
+    document.getElementById(containerId).innerHTML = entries.map(([name, qty]) => {
+      const pct = Math.min(100, (qty / max) * 100);
+      const isLow = qty < lowThreshold;
+      const quickAdd = isShelf ? `
+        <div style="display:flex; align-items:center; gap:0.35rem; margin-left:0.5rem;">
+          <input type="number" min="1" step="1" value="1" id="qadd-${name.replace(/\s/g,'_')}"
+            style="width:52px; padding:0.25rem 0.4rem; border-radius:8px; border:1px solid rgba(0,0,0,0.15); font:inherit; font-size:0.8rem;" />
+          <button class="btn btn-sm btn-gold" style="padding:0.25rem 0.6rem; font-size:0.78rem;"
+            onclick="quickAddShelf('${name.replace(/'/g,"\\'")}')">+ bags</button>
+        </div>` : "";
       return `
-        <div class="inv-item">
+        <div class="inv-item" style="flex-wrap:wrap; gap:0.4rem 0.75rem;">
           <div class="inv-label">${name}${isLow ? '<span class="low-stock-badge">LOW</span>' : ''}</div>
           <div class="inv-bar-bg">
             <div class="inv-bar-fill${isLow ? ' low' : ''}" style="width:${pct}%"></div>
           </div>
-          <div class="inv-val">${lbs} lbs</div>
+          <div class="inv-val">${qty} ${unit}</div>
+          ${quickAdd}
         </div>`;
     }).join("");
+  }
+
+  async function quickAddShelf(blendName) {
+    const inputId = `qadd-${blendName.replace(/\s/g,'_')}`;
+    const n = Number(document.getElementById(inputId)?.value) || 0;
+    if (n <= 0) { alert("Enter a number of bags to add."); return; }
+
+    if (!opsData.inventory.shelf[blendName] && opsData.inventory.shelf[blendName] !== 0) {
+      opsData.inventory.shelf[blendName] = 0;
+    }
+    opsData.inventory.shelf[blendName] = Math.round(opsData.inventory.shelf[blendName] + n);
+
+    try {
+      const res = await fetch("/.netlify/functions/update-inventory", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
+        body: JSON.stringify({ inventory: opsData.inventory })
+      });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+      renderInventory();
+    } catch (e) {
+      alert("Error updating inventory: " + e.message);
+    }
   }
 
   function renderInvAlerts() {
@@ -983,6 +1020,7 @@
   document.getElementById("roast-type").addEventListener("change", () => {
     const isOrder = document.getElementById("roast-type").value === "order";
     document.getElementById("order-id-field").style.display = isOrder ? "block" : "none";
+    document.getElementById("bags-filled-field").style.display = isOrder ? "none" : "block";
   });
 
   // Set today's date
@@ -996,13 +1034,15 @@
     const orderId = document.getElementById("roast-order-id").value.trim();
     const notes = document.getElementById("roast-notes").value.trim();
 
+    const bags = Number(document.getElementById("roast-bags").value);
     if (!blend || !lbs || lbs <= 0) { alert("Please enter a blend and amount."); return; }
+    if (roastType === "shelf" && (!bags || bags <= 0)) { alert("Enter how many bags were filled."); return; }
 
     try {
       const res = await fetch("/.netlify/functions/log-roast", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
-        body: JSON.stringify({ blend, lbsRoasted: lbs, date, roastType, orderId, notes })
+        body: JSON.stringify({ blend, lbsRoasted: lbs, bagsFilled: bags || null, date, roastType, orderId, notes })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -1014,10 +1054,11 @@
       renderRoastLog();
 
       document.getElementById("roast-lbs").value = "";
+      document.getElementById("roast-bags").value = "";
       document.getElementById("roast-notes").value = "";
       document.getElementById("roast-green-preview").textContent = "";
 
-      alert(`Roast logged. ${roastType === "shelf" ? "Shelf stock updated." : "Green beans deducted."}`);
+      alert(`Roast logged. ${roastType === "shelf" ? `${bags} bags added to shelf stock.` : "Green beans deducted."}`);
     } catch (e) { alert("Error logging roast: " + e.message); }
   }
 
@@ -1033,12 +1074,15 @@
         <span>Date</span><span>Blend</span><span>Lbs</span><span>Type</span><span>Notes</span>
       </div>` +
       log.map(s => {
-        const greenLines = Object.entries(s.greenUsed || {}).map(([k, v]) => `${k}: ${v}`).join(", ");
+        const greenLines = Object.entries(s.greenUsed || {}).map(([k, v]) => `${k}: ${v} lbs`).join(", ");
+        const output = s.roastType === "shelf"
+          ? `${s.bagsFilled != null ? s.bagsFilled + " bags" : "—"}`
+          : "order roast";
         return `
           <div class="log-row">
             <span>${s.date || "—"}</span>
             <span><strong>${s.blend}</strong><br><small style="opacity:0.6">${greenLines}</small></span>
-            <span>${s.lbsRoasted} lbs</span>
+            <span>${s.lbsRoasted} lbs in<br><strong>${output}</strong></span>
             <span><span class="roast-type-chip ${s.roastType === 'shelf' ? 'chip-shelf' : 'chip-order'}">${s.roastType}</span></span>
             <span style="font-size:0.8rem; opacity:0.65;">${s.notes || "—"}</span>
           </div>`;
