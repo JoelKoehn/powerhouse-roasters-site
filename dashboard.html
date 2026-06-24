@@ -822,114 +822,130 @@
 
   // ═══════════════════════════════════════════════════════════
   //  BLENDS
+  //  Editor state uses arrays: { "Blend Name": [{origin, pct}, ...] }
+  //  Saved/loaded format uses objects: { "Blend Name": {"Origin": pct} }
   // ═══════════════════════════════════════════════════════════
-  let blendEditorState = {};
+  let blendEditorState = {}; // { blendName: [{origin, pct}] }
+
+  function blendsObjToArrays(blends) {
+    const result = {};
+    for (const [name, formula] of Object.entries(blends)) {
+      result[name] = Object.entries(formula).map(([origin, pct]) => ({ origin, pct: Number(pct) }));
+    }
+    return result;
+  }
+
+  function blendsArraysToObj(state) {
+    const result = {};
+    for (const [name, rows] of Object.entries(state)) {
+      result[name] = {};
+      for (const { origin, pct } of rows) {
+        result[name][origin] = Number(pct);
+      }
+    }
+    return result;
+  }
 
   function renderBlends() {
-    blendEditorState = JSON.parse(JSON.stringify(opsData.blends));
+    blendEditorState = blendsObjToArrays(opsData.blends);
     renderBlendEditor();
   }
 
   function renderBlendEditor() {
     const container = document.getElementById("blends-root");
-    container.innerHTML = Object.entries(blendEditorState).map(([name, formula], idx) => {
-      const total = Object.values(formula).reduce((s, v) => s + Number(v), 0).toFixed(1);
+    container.innerHTML = Object.entries(blendEditorState).map(([name, rows], idx) => {
+      const total = rows.reduce((s, r) => s + Number(r.pct), 0).toFixed(1);
       const isOk = Math.abs(Number(total) - 100) < 0.5;
-      const formulaRows = Object.entries(formula).map(([origin, pct], ri) => `
-        <div class="blend-formula-row" data-blend="${name}" data-row="${ri}">
-          <select class="blend-origin-select" data-blend="${name}" data-row="${ri}" onchange="updateBlendOrigin('${name}', ${ri}, this.value)">
-            ${ORIGINS.map(o => `<option${o === origin ? " selected" : ""}>${o}</option>`).join("")}
+      const formulaRows = rows.map((row, ri) => `
+        <div class="blend-formula-row">
+          <select data-blend="${idx}" data-row="${ri}" data-field="origin"
+            onchange="updateBlendRow(${idx}, ${ri}, 'origin', this.value)">
+            ${ORIGINS.map(o => `<option${o === row.origin ? " selected" : ""}>${o}</option>`).join("")}
           </select>
-          <input type="number" min="0" max="100" step="0.1" value="${pct}"
-            class="blend-pct-input"
-            oninput="updateBlendPct('${name}', ${ri}, this.value)"
+          <input type="number" min="0" max="100" step="0.1" value="${row.pct}"
+            data-blend="${idx}" data-row="${ri}" data-field="pct"
+            oninput="updateBlendRow(${idx}, ${ri}, 'pct', this.value)"
             style="padding:0.55rem 0.7rem; border-radius:10px; border:1px solid rgba(0,0,0,0.14); font:inherit; width:80px;" />
           <span style="font-size:0.85rem;">%</span>
-          <button class="btn btn-sm btn-gray" onclick="removeBlendRow('${name}', ${ri})">✕</button>
+          <button class="btn btn-sm btn-gray" onclick="removeBlendRow(${idx}, ${ri})">✕</button>
         </div>`).join("");
 
       return `
         <div class="dash-card" id="blend-card-${idx}">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
-            <input value="${name}" onchange="renameBlend('${name}', this.value)"
+            <input value="${name}" data-blend-idx="${idx}"
+              onchange="renameBlend(${idx}, this.value)"
               style="font-size:1rem; font-weight:800; border:none; background:transparent; border-bottom:2px solid rgba(0,0,0,0.15); padding:0.2rem 0.35rem; font:inherit; font-weight:800;" />
-            <button class="btn btn-sm btn-red" onclick="deleteBlend('${name}')">Delete Blend</button>
+            <button class="btn btn-sm btn-red" onclick="deleteBlend(${idx})">Delete Blend</button>
           </div>
           ${formulaRows}
-          <div class="pct-total ${isOk ? 'pct-ok' : 'pct-bad'}">Total: ${total}% ${isOk ? '✓' : '— must equal 100%'}</div>
-          <button class="btn btn-sm btn-gray" onclick="addBlendRow('${name}')" style="margin-top:0.5rem;">+ Add Origin</button>
+          <div class="pct-total ${isOk ? 'pct-ok' : 'pct-bad'}" id="blend-total-${idx}">Total: ${total}% ${isOk ? '✓' : '— must equal 100%'}</div>
+          <button class="btn btn-sm btn-gray" onclick="addBlendRow(${idx})" style="margin-top:0.5rem;">+ Add Origin</button>
         </div>`;
     }).join("");
   }
 
-  function updateBlendOrigin(blend, row, newOrigin) {
-    const formula = blendEditorState[blend];
-    const entries = Object.entries(formula);
-    const [, pct] = entries[row];
-    const newEntries = entries.map(([k, v], i) => i === row ? [newOrigin, v] : [k, v]);
-    blendEditorState[blend] = Object.fromEntries(newEntries);
-  }
-
-  function updateBlendPct(blend, row, val) {
-    const formula = blendEditorState[blend];
-    const entries = Object.entries(formula);
-    entries[row][1] = Number(val) || 0;
-    blendEditorState[blend] = Object.fromEntries(entries);
-    // Update total display
-    const total = Object.values(blendEditorState[blend]).reduce((s, v) => s + Number(v), 0).toFixed(1);
+  function updateBlendRow(blendIdx, rowIdx, field, value) {
+    const blendName = Object.keys(blendEditorState)[blendIdx];
+    if (!blendName) return;
+    blendEditorState[blendName][rowIdx][field] = field === "pct" ? Number(value) || 0 : value;
+    // Update total display without full re-render
+    const rows = blendEditorState[blendName];
+    const total = rows.reduce((s, r) => s + Number(r.pct), 0).toFixed(1);
     const isOk = Math.abs(Number(total) - 100) < 0.5;
-    const card = document.getElementById(`blend-card-${Object.keys(blendEditorState).indexOf(blend)}`);
-    if (card) {
-      const totalEl = card.querySelector(".pct-total");
-      if (totalEl) {
-        totalEl.className = `pct-total ${isOk ? 'pct-ok' : 'pct-bad'}`;
-        totalEl.textContent = `Total: ${total}% ${isOk ? '✓' : '— must equal 100%'}`;
-      }
+    const totalEl = document.getElementById(`blend-total-${blendIdx}`);
+    if (totalEl) {
+      totalEl.className = `pct-total ${isOk ? 'pct-ok' : 'pct-bad'}`;
+      totalEl.textContent = `Total: ${total}% ${isOk ? '✓' : '— must equal 100%'}`;
     }
   }
 
-  function addBlendRow(blend) {
-    blendEditorState[blend]["New Origin"] = 0;
+  function addBlendRow(blendIdx) {
+    const blendName = Object.keys(blendEditorState)[blendIdx];
+    if (!blendName) return;
+    blendEditorState[blendName].push({ origin: ORIGINS[0], pct: 0 });
     renderBlendEditor();
   }
 
-  function removeBlendRow(blend, row) {
-    const entries = Object.entries(blendEditorState[blend]);
-    entries.splice(row, 1);
-    blendEditorState[blend] = Object.fromEntries(entries);
+  function removeBlendRow(blendIdx, rowIdx) {
+    const blendName = Object.keys(blendEditorState)[blendIdx];
+    if (!blendName) return;
+    blendEditorState[blendName].splice(rowIdx, 1);
     renderBlendEditor();
   }
 
-  function renameBlend(oldName, newName) {
+  function renameBlend(blendIdx, newName) {
+    const names = Object.keys(blendEditorState);
+    const oldName = names[blendIdx];
     if (!newName || newName === oldName) return;
     const entries = Object.entries(blendEditorState);
-    const idx = entries.findIndex(([k]) => k === oldName);
-    if (idx < 0) return;
-    entries[idx][0] = newName;
+    entries[blendIdx][0] = newName;
     blendEditorState = Object.fromEntries(entries);
   }
 
-  function deleteBlend(name) {
-    if (!confirm(`Delete blend "${name}"?`)) return;
-    delete blendEditorState[name];
+  function deleteBlend(blendIdx) {
+    const blendName = Object.keys(blendEditorState)[blendIdx];
+    if (!confirm(`Delete blend "${blendName}"?`)) return;
+    delete blendEditorState[blendName];
     renderBlendEditor();
   }
 
   function addBlend() {
-    blendEditorState["New Blend"] = { "Brazil": 100 };
+    blendEditorState["New Blend"] = [{ origin: "Brazil", pct: 100 }];
     renderBlendEditor();
   }
 
   async function saveAllBlends() {
     try {
+      const blendsObj = blendsArraysToObj(blendEditorState);
       const res = await fetch("/.netlify/functions/save-blends", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
-        body: JSON.stringify({ blends: blendEditorState })
+        body: JSON.stringify({ blends: blendsObj })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      opsData.blends = JSON.parse(JSON.stringify(blendEditorState));
+      opsData.blends = blendsObj;
       populateRoastBlendSelect();
       const saved = document.getElementById("blends-saved");
       saved.style.display = "inline";
