@@ -1,0 +1,999 @@
+/* =========================================================
+   POWERHOUSE ROASTERS — styles.css (FULL REWRITE)
+   Goal: warm parchment + visible hero image + readable hero text
+         + cleaner, more professional header.
+   ========================================================= */
+
+/* ---------- DESIGN TOKENS ---------- */
+:root{
+  --bg: #F6F2EA;            /* warm parchment */
+  --bg-alt: #E9E0CF;        /* section alt */
+  --card: #FDF9F2;          /* card surface */
+  --text: #2B2B2B;          /* charcoal */
+  --muted: #6E7569;         /* sage-gray */
+  --ink: #0A0A0A;           /* near-black */
+  --white: #FFFFFF;
+
+  --gold: #C8A24D;          /* muted gold */
+  --gold-dark: #B89542;
+
+  --border: rgba(0,0,0,0.10);
+  --shadow: 0 10px 24px rgba(0,0,0,0.06);
+
+  --radius: 14px;
+  --radius-lg: 18px;
+
+  --container: 1200px;
+}
+
+/* ---------- BASE ---------- */
+*{ box-sizing: border-box; }
+
+html, body{ height: 100%; }
+
+body{
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+}
+
+img{
+  max-width: 100%;
+  display: block;
+}
+
+a{
+  color: var(--gold);
+  text-decoration: none;
+}
+a:hover{ opacity: 0.9; }
+
+.container{
+  width: 92%;
+  max-width: var(--container);
+  margin: 0 auto;
+}
+
+/* Headings */
+h1, h2, h3{
+  color: var(--text);
+  margin: 0 0 0.75rem;
+  line-height: 1.2;
+}
+
+/* ---------- HEADER ---------- */
+.site-header{
+  position: sticky;
+  top: 0;
+  z-index: 99;
+
+  background: rgba(10,10,10,0.94);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+}
+
+.header-inner{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.85rem 0;
+  gap: 1rem;
+}
+
+.logo-area{
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 220px;
+}
+
+.logo-img{
+  width: 46px;
+  height: auto;
+}
+
+.site-title{
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--white);
+  font-size: 0.92rem;
+  text-transform: uppercase;
+  opacity: 0.95;
+}
+
+/* Nav: more “premium” spacing + clickable area */
+.nav{
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.nav a{
+  color: rgba(255,255,255,0.92);
+  font-size: 0.90rem;
+  letter-spacing: 0.02em;
+  padding: 0.45rem 0.6rem;
+  border-radius: 999px;
+  opacity: 0.92;
+}
+
+.nav a:hover{
+  opacity: 1;
+  background: rgba(255,255,255,0.08);
+}
+
+/* Header CTA */
+.btn-header{
+  padding: 0.55rem 1.15rem;
+  border-radius: 999px;
+  background: var(--gold);
+  border: 1px solid var(--gold);
+  color: #1A1307 !important;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.btn-header:hover{
+  background: var(--gold-dark);
+  border-color: var(--gold-dark);
+}
+
+/* ---------- HERO ---------- */
+/* Keep image VERY visible, but create readability where text sits */
+.hero{
+  padding: 6.25rem 0 5.75rem;
+  text-align: center;
+  color: var(--white);
+  position: relative;
+
+  /* Image first (very visible) */
+  background: url("images/ranch-hero.jpg") center 40% / cover no-repeat;
+
+  /* Subtle warm tone so it matches parchment site */
+  background-color: #111;
+}
+
+/* Overlay tuned for: visible photo + readable text */
+.hero::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  /* Minimal top overlay (keep image visible),
+     stronger around the text area,
+     slightly darker at bottom */
+  background:
+    radial-gradient(
+      circle at 50% 58%,
+      rgba(0,0,0,0.20) 0%,
+      rgba(0,0,0,0.35) 42%,
+      rgba(0,0,0,0.55) 78%,
+      rgba(0,0,0,0.68) 100%
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(0,0,0,0.12) 0%,
+      rgba(0,0,0,0.20) 35%,
+      rgba(0,0,0,0.40) 72%,
+      rgba(0,0,0,0.62) 100%
+    );
+}
+
+/* Ensure hero content sits above overlay */
+.hero > *{
+  position: relative;
+  z-index: 1;
+}
+
+.eyebrow{
+  letter-spacing: 0.22em;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.82);
+  text-shadow: 0 10px 22px rgba(0,0,0,0.55);
+}
+
+.hero-title{
+  font-size: clamp(2.6rem, 4.6vw, 3.7rem);
+  margin: 0.9rem 0;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--white);
+
+  /* This is what makes the headline POP */
+  text-shadow:
+    0 2px 0 rgba(0,0,0,0.30),
+    0 14px 34px rgba(0,0,0,0.70);
+}
+
+.hero-sub{
+  max-width: 40rem;
+  margin: 0.9rem auto;
+  font-size: 1.08rem;
+  color: rgba(255,255,255,0.93);
+  text-shadow: 0 12px 26px rgba(0,0,0,0.60);
+}
+
+/* Hero actions */
+.hero-actions{
+  display: flex;
+  justify-content: center;
+  gap: 0.9rem;
+  margin-top: 1.8rem;
+  flex-wrap: wrap;
+}
+
+/* Optional: if you add <div class="hero-panel"> around text/buttons */
+.hero-panel{
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 1.4rem 1.25rem;
+  border-radius: var(--radius-lg);
+  background: rgba(0,0,0,0.18);
+  border: 1px solid rgba(255,255,255,0.10);
+  backdrop-filter: blur(6px);
+}
+
+/* ---------- BUTTONS ---------- */
+.btn{
+  padding: 0.78rem 1.55rem;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 750;
+  transition: 0.18s ease;
+  font-size: 0.95rem;
+  display: inline-block;
+}
+
+.btn-primary{
+  background: var(--gold);
+  color: #1E1E1E;
+  border: 1px solid var(--gold);
+}
+
+.btn-primary:hover{
+  background: var(--gold-dark);
+  border-color: var(--gold-dark);
+}
+
+.btn-outline{
+  border: 1px solid rgba(255,255,255,0.72);
+  color: var(--white);
+  background: rgba(0,0,0,0.18);
+}
+
+.btn-outline:hover{
+  background: rgba(255,255,255,0.10);
+  border-color: rgba(255,255,255,0.85);
+}
+
+/* ---------- SECTIONS ---------- */
+.section{
+  padding: 4.2rem 0;
+}
+
+.section-alt{
+  background: var(--bg-alt);
+}
+
+.section-title{
+  font-size: 2rem;
+  margin-bottom: 0.55rem;
+}
+
+.section-lead{
+  max-width: 52rem;
+  margin: 0 0 2rem;
+  color: rgba(43,43,43,0.90);
+}
+
+/* ---------- PILLARS ---------- */
+.pillars{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-top: 1.75rem;
+}
+
+.pillar{
+  background: rgba(255,255,255,0.55);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.35rem 1.25rem;
+  box-shadow: var(--shadow);
+}
+
+.pillar h3{
+  margin-bottom: 0.4rem;
+}
+
+/* ---------- WYOMING BANNER / STORY ---------- */
+.wyoming-banner{
+  padding: 4.2rem 0;
+  background:
+    linear-gradient(to bottom, rgba(246,242,234,0.86), rgba(246,242,234,0.92));
+}
+
+.wyoming-banner-inner{
+  max-width: 650px;
+  margin: auto;
+}
+
+/* ---------- CRAFTSMANSHIP ---------- */
+.craft-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem;
+  align-items: center;
+}
+
+.craft-img img{
+  border-radius: var(--radius);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.10);
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+/* ---------- DIVIDER (If used) ---------- */
+.ranch-divider{
+  height: 260px;
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(246,242,234,0.40),
+      rgba(246,242,234,0.78)
+    );
+}
+
+/* ---------- COFFEES ---------- */
+.coffee-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1.5rem;
+}
+
+.coffee-card{
+  background: var(--card);
+  padding: 1.6rem;
+  border-radius: var(--radius);
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.05);
+}
+
+.coffee-card h3{
+  margin-bottom: 0.45rem;
+}
+
+.coffee-card .muted{
+  color: rgba(43,43,43,0.80);
+}
+
+/* ---------- SAMPLE PACK ---------- */
+.sample-layout{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sample-list{
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.sample-cta{
+  min-width: 220px;
+}
+
+.sample-note{
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+  color: rgba(43,43,43,0.86);
+}
+
+/* ---------- WHOLESALE ---------- */
+.wholesale-list{
+  margin: 0 0 1.5rem;
+  padding-left: 1.1rem;
+}
+
+/* ---------- CONTACT ---------- */
+.contact-form{
+  max-width: 520px;
+  margin-top: 1rem;
+}
+
+.form-row{
+  margin-bottom: 0.85rem;
+}
+
+.contact-form input,
+.contact-form textarea{
+  width: 100%;
+  padding: 0.78rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.18);
+  font: inherit;
+  background: rgba(255,255,255,0.75);
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus{
+  outline: none;
+  border-color: rgba(200,162,77,0.65);
+  box-shadow: 0 0 0 4px rgba(200,162,77,0.18);
+}
+
+.contact-form textarea{
+  resize: vertical;
+}
+
+.contact-note{
+  margin-top: 1.2rem;
+  font-size: 0.95rem;
+  color: rgba(43,43,43,0.86);
+}
+
+/* ---------- FOOTER ---------- */
+.site-footer{
+  background: var(--bg-alt);
+  padding: 1.6rem 0;
+  color: var(--text);
+  text-align: center;
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+
+/* ---------- STORY PAGE HELPERS (if used) ---------- */
+.story-page{
+  background: var(--bg);
+}
+
+.story-divider{
+  height: 1px;
+  background: rgba(0,0,0,0.10);
+  margin: 48px 0;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 1000px){
+  .header-inner{
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .logo-area{
+    min-width: unset;
+  }
+
+  .nav{
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .btn-header{
+    padding: 0.5rem 1rem;
+    font-size: 0.88rem;
+  }
+}
+
+@media (max-width: 900px){
+  .pillars{
+    grid-template-columns: 1fr;
+  }
+
+  .craft-grid{
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px){
+  .hero{
+    padding: 5.2rem 0 4.8rem;
+  }
+
+  .hero-sub{
+    font-size: 1.02rem;
+  }
+
+  .nav a{
+    font-size: 0.88rem;
+    padding: 0.42rem 0.55rem;
+  }
+}
+/* =========================
+   HOMEPAGE COFFEE SECTION UPGRADE
+   ========================= */
+
+.section-heading {
+  margin-bottom: 2rem;
+}
+
+.coffee-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+.coffee-card {
+  background: var(--card);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.05);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.coffee-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.10);
+  border-color: rgba(200, 162, 77, 0.40);
+}
+
+.coffee-card-link {
+  display: block;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+}
+
+.coffee-card-image {
+  width: 100%;
+  aspect-ratio: 4 / 4.5;
+  object-fit: contain;
+  background: linear-gradient(to bottom, #f8f4ec, #f1eadc);
+  padding: 1.25rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.coffee-card-content {
+  padding: 1.2rem 1.2rem 1.25rem;
+}
+
+.coffee-card-content h3 {
+  margin-bottom: 0.45rem;
+  font-size: 1.2rem;
+}
+
+.coffee-notes {
+  margin: 0 0 0.6rem;
+  color: var(--gold-dark);
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.coffee-description {
+  margin: 0 0 1rem;
+  color: rgba(43, 43, 43, 0.84);
+  line-height: 1.65;
+  font-size: 0.96rem;
+}
+
+.coffee-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+
+.roast-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.38rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(200, 162, 77, 0.12);
+  border: 1px solid rgba(200, 162, 77, 0.26);
+  color: #6b5322;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.coffee-cta {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+
+.coffee-cta::after {
+  content: " →";
+}
+
+.featured-coffee {
+  border: 1px solid rgba(200, 162, 77, 0.36);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.08);
+  position: relative;
+}
+
+.featured-coffee .coffee-card-image {
+  background: linear-gradient(to bottom, #f7f1e4, #eadfc7);
+}
+
+.coffee-card-badge {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 2;
+  background: var(--gold);
+  color: #1e1e1e;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.42rem 0.75rem;
+  border-radius: 999px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+}
+
+@media (max-width: 640px) {
+  .coffee-card-content {
+    padding: 1rem;
+  }
+
+  .coffee-card-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+/* =========================
+   PRODUCT PAGE LAYOUT
+   ========================= */
+
+.product-page {
+  padding: 72px 0;
+  background: var(--bg);
+}
+
+.product-grid {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 48px;
+  align-items: start;
+}
+
+.product-images img {
+  width: 100%;
+  display: block;
+  border-radius: 14px;
+}
+
+.product-main-wrap {
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: #fff;
+}
+
+.product-main {
+  margin: 0;
+  transition: transform 0.3s ease;
+}
+
+/* image zoom */
+.product-main-wrap:hover .product-main {
+  transform: scale(1.04);
+}
+
+.thumbs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.thumbs img {
+  border: 1px solid rgba(0,0,0,0.08);
+  background: #fff;
+}
+
+.product-info h1 {
+  font-size: clamp(2.1rem, 4vw, 3rem);
+  line-height: 1.1;
+  margin-bottom: 10px;
+}
+
+.product-roast {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 18px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.product-description {
+  font-size: 1.05rem;
+  line-height: 1.75;
+  margin-bottom: 22px;
+}
+
+.product-meta {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 28px;
+  display: grid;
+  gap: 10px;
+}
+
+.product-meta li {
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+
+.product-actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.buy-button {
+  display: inline-block;
+  background: var(--gold);
+  color: #1f1a12;
+  padding: 14px 28px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 700;
+  border: 1px solid var(--gold);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.buy-button:hover {
+  background: var(--gold-dark);
+  transform: translateY(-1px);
+}
+
+.back-button {
+  display: inline-block;
+  padding: 14px 28px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 700;
+  border: 1px solid rgba(0,0,0,0.16);
+  color: var(--text);
+  background: transparent;
+}
+
+.back-button:hover {
+  background: rgba(0,0,0,0.04);
+}
+
+/* =========================
+   BETTER MOBILE LAYOUT
+   ========================= */
+
+@media (max-width: 900px) {
+  .product-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .product-page {
+    padding: 48px 0;
+  }
+
+  .thumbs {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .product-info h1 {
+    font-size: 2rem;
+  }
+
+  .product-description {
+    font-size: 1rem;
+  }
+
+  .product-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .buy-button,
+  .back-button {
+    text-align: center;
+    width: 100%;
+  }
+}
+.cart-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.cart-count {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: #151515;
+  font-size: 0.75rem;
+  font-weight: 800;
+  align-items: center;
+  justify-content: center;
+  display: none;
+}
+
+.cart-page {
+  width: 92%;
+  max-width: 1200px;
+  margin: 2rem auto 3rem;
+}
+
+.cart-layout {
+  display: grid;
+  grid-template-columns: 1.5fr 0.9fr;
+  gap: 1.5rem;
+}
+
+.cart-panel,
+.cart-summary {
+  background: linear-gradient(145deg, rgba(255,255,255,0.82), rgba(255,255,255,0.68));
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 24px;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.06);
+}
+
+.cart-panel {
+  padding: 1.25rem;
+}
+
+.cart-summary {
+  padding: 1.25rem;
+  height: fit-content;
+  position: sticky;
+  top: 100px;
+}
+
+.cart-item {
+  display: grid;
+  grid-template-columns: 100px 1fr auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+
+.cart-item:last-child {
+  border-bottom: none;
+}
+
+.cart-item-image-wrap {
+  display: block;
+  background: linear-gradient(180deg, #f9f6ef 0%, #efe5d5 100%);
+  border-radius: 16px;
+  padding: 0.5rem;
+}
+
+.cart-item-image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+}
+
+.cart-item-name {
+  display: inline-block;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #151515;
+  text-decoration: none;
+  margin-bottom: 0.35rem;
+}
+
+.cart-item-price,
+.cart-item-total {
+  font-weight: 700;
+  color: #2b2b2b;
+}
+
+.cart-item-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.qty-btn,
+.remove-btn {
+  border: 1px solid rgba(0,0,0,0.10);
+  background: rgba(255,255,255,0.88);
+  border-radius: 999px;
+  padding: 0.45rem 0.7rem;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.qty-value {
+  min-width: 24px;
+  text-align: center;
+  font-weight: 800;
+}
+
+.cart-summary h2 {
+  margin-bottom: 1rem;
+}
+
+.cart-summary-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.cart-shipping-note {
+  margin: 1rem 0;
+  padding: 0.85rem 1rem;
+  border-radius: 16px;
+  background: rgba(200, 162, 77, 0.10);
+  border: 1px solid rgba(200, 162, 77, 0.22);
+}
+
+.checkout-btn {
+  width: 100%;
+  min-height: 54px;
+  border: none;
+  border-radius: 999px;
+  background: var(--gold);
+  color: #1c1406;
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 14px 28px rgba(200, 162, 77, 0.22);
+}
+
+.checkout-btn.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cart-empty {
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+.cart-shop-link {
+  display: inline-flex;
+  margin-top: 1rem;
+  padding: 0.8rem 1rem;
+  border-radius: 999px;
+  text-decoration: none;
+  background: var(--gold);
+  color: #1c1406;
+  font-weight: 800;
+}
+
+@media (max-width: 900px) {
+  .cart-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .cart-summary {
+    position: static;
+  }
+
+  .cart-item {
+    grid-template-columns: 80px 1fr;
+  }
+
+  .cart-item-total {
+    grid-column: 2;
+  }
+}

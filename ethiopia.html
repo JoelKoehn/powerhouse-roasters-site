@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ethiopia | Powerhouse Roasters</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .fpd-page {
+      min-height: calc(100vh - 78px);
+      background:
+        radial-gradient(circle at top left, rgba(200, 162, 77, 0.12), transparent 30%),
+        linear-gradient(180deg, #f7f2e9 0%, #f1e8d8 100%);
+      padding: 2rem 0 2.5rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .fpd-shell {
+      width: 92%;
+      max-width: 1320px;
+      margin: 0 auto;
+    }
+
+    .fpd-card {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 2rem;
+      align-items: stretch;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,0.78), rgba(255,255,255,0.64));
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 28px;
+      box-shadow:
+        0 30px 70px rgba(0,0,0,0.10),
+        inset 0 1px 0 rgba(255,255,255,0.5);
+      overflow: hidden;
+      min-height: calc(100vh - 150px);
+    }
+
+    .fpd-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(12,12,12,0.03) 0%, transparent 34%),
+        radial-gradient(circle at 82% 15%, rgba(200, 162, 77, 0.11), transparent 26%);
+    }
+
+    .fpd-gallery {
+      position: relative;
+      padding: 1.5rem;
+      background:
+        linear-gradient(180deg, #efe5d2 0%, #eadfc9 100%);
+      border-right: 1px solid rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .fpd-gallery-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .fpd-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.5rem 0.9rem;
+      border-radius: 999px;
+      background: rgba(10,10,10,0.88);
+      color: #fff;
+      font-size: 0.77rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 800;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    .fpd-badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--gold);
+      display: inline-block;
+    }
+
+    .fpd-counter {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: rgba(43,43,43,0.68);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .fpd-stage {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+      border-radius: 24px;
+      background:
+        radial-gradient(circle at 50% 26%, rgba(255,255,255,0.75), rgba(255,255,255,0.26) 42%, rgba(255,255,255,0.04) 70%),
+        linear-gradient(180deg, #f9f6ef 0%, #efe5d5 100%);
+      border: 1px solid rgba(0,0,0,0.05);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.55),
+        0 12px 30px rgba(0,0,0,0.06);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.25rem;
+    }
+
+    .fpd-slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transform: scale(1.015);
+      transition: opacity 0.45s ease, transform 0.45s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.25rem;
+    }
+
+    .fpd-slide.active {
+      opacity: 1;
+      transform: scale(1);
+      z-index: 1;
+    }
+
+    .fpd-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      user-select: none;
+      -webkit-user-drag: none;
+      filter: drop-shadow(0 18px 28px rgba(0,0,0,0.12));
+    }
+
+    .fpd-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 48px;
+      height: 48px;
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 50%;
+      background: rgba(255,255,255,0.88);
+      color: #181818;
+      font-size: 1.2rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.10);
+      transition: transform 0.18s ease, background 0.18s ease;
+      z-index: 3;
+    }
+
+    .fpd-arrow:hover {
+      background: #fff;
+    }
+
+    .fpd-arrow:active {
+      transform: translateY(-50%) scale(0.97);
+    }
+
+    .fpd-arrow.prev { left: 1rem; }
+    .fpd-arrow.next { right: 1rem; }
+
+    .fpd-thumbs {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.8rem;
+      margin-top: 1rem;
+    }
+
+    .fpd-thumb {
+      border: 1px solid rgba(0,0,0,0.08);
+      background: rgba(255,255,255,0.78);
+      border-radius: 18px;
+      padding: 0.45rem;
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    }
+
+    .fpd-thumb:hover {
+      transform: translateY(-2px);
+      border-color: rgba(200, 162, 77, 0.46);
+    }
+
+    .fpd-thumb.active {
+      border-color: rgba(200, 162, 77, 0.75);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+      background: rgba(255,255,255,0.96);
+    }
+
+    .fpd-thumb img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: contain;
+      border-radius: 12px;
+    }
+
+    .fpd-info {
+      position: relative;
+      padding: 2.25rem 2.15rem 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .fpd-eyebrow {
+      display: inline-block;
+      margin-bottom: 0.9rem;
+      color: var(--gold-dark);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.17em;
+      text-transform: uppercase;
+    }
+
+    .fpd-title {
+      font-size: clamp(2.4rem, 4vw, 3.5rem);
+      line-height: 0.98;
+      margin: 0 0 0.75rem;
+      letter-spacing: -0.03em;
+      color: #161616;
+    }
+
+    .fpd-subrow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+      margin-bottom: 1rem;
+    }
+
+    .fpd-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 0.5rem 0.9rem;
+      border-radius: 999px;
+      font-size: 0.83rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border: 1px solid rgba(0,0,0,0.08);
+      background: rgba(255,255,255,0.68);
+      color: #262626;
+    }
+
+    .fpd-pill.dark {
+      background: #151515;
+      color: #fff;
+      border-color: #151515;
+    }
+
+    .fpd-description {
+      font-size: 1rem;
+      line-height: 1.72;
+      color: rgba(43,43,43,0.86);
+      max-width: 56ch;
+      margin: 0 0 1.15rem;
+    }
+
+    .fpd-tasting {
+      margin: 0 0 1.25rem;
+      padding: 1rem 1.1rem;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.74);
+      border: 1px solid rgba(0,0,0,0.06);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.45);
+    }
+
+    .fpd-tasting-label {
+      display: block;
+      font-size: 0.76rem;
+      font-weight: 900;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(43,43,43,0.55);
+      margin-bottom: 0.35rem;
+    }
+
+    .fpd-tasting-notes {
+      font-size: 1.08rem;
+      font-weight: 800;
+      color: #171717;
+      letter-spacing: -0.01em;
+    }
+
+    .fpd-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.85rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .fpd-meta-card {
+      padding: 0.95rem 1rem;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.72);
+      border: 1px solid rgba(0,0,0,0.06);
+      box-shadow: 0 10px 22px rgba(0,0,0,0.04);
+    }
+
+    .fpd-meta-label {
+      display: block;
+      font-size: 0.74rem;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(43,43,43,0.5);
+      margin-bottom: 0.28rem;
+    }
+
+    .fpd-meta-value {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: #1f1f1f;
+      line-height: 1.45;
+    }
+
+    .fpd-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.85rem;
+      margin-top: 0.2rem;
+    }
+
+    .fpd-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 54px;
+      padding: 0.9rem 1.3rem;
+      border-radius: 999px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-decoration: none;
+      transition: transform 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .fpd-btn:hover {
+      transform: translateY(-1px);
+      opacity: 1;
+    }
+
+    .fpd-btn-primary {
+      background: var(--gold);
+      color: #1c1406;
+      border: 1px solid var(--gold);
+      box-shadow: 0 14px 28px rgba(200, 162, 77, 0.22);
+    }
+
+    .fpd-btn-primary:hover {
+      background: var(--gold-dark);
+      border-color: var(--gold-dark);
+      color: #1c1406;
+    }
+
+    .fpd-btn-secondary {
+      background: rgba(255,255,255,0.76);
+      color: #202020;
+      border: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .fpd-shipping {
+      margin-top: 0.9rem;
+      padding: 0.85rem 1rem;
+      border-radius: 16px;
+      background: rgba(200, 162, 77, 0.10);
+      border: 1px solid rgba(200, 162, 77, 0.22);
+      color: rgba(43,43,43,0.78);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .fpd-shipping strong {
+      color: #1d1d1d;
+    }
+
+    @media (max-width: 1100px) {
+      .fpd-page {
+        min-height: auto;
+        padding: 1.5rem 0 2rem;
+      }
+
+      .fpd-card {
+        grid-template-columns: 1fr;
+        min-height: auto;
+      }
+
+      .fpd-gallery {
+        border-right: none;
+        border-bottom: 1px solid rgba(0,0,0,0.06);
+      }
+
+      .fpd-stage {
+        min-height: 480px;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .fpd-page {
+        padding: 1rem 0 1.6rem;
+      }
+
+      .fpd-shell {
+        width: 94%;
+      }
+
+      .fpd-gallery,
+      .fpd-info {
+        padding: 1rem;
+      }
+
+      .fpd-stage {
+        min-height: 360px;
+        padding: 0.75rem;
+      }
+
+      .fpd-arrow {
+        width: 42px;
+        height: 42px;
+      }
+
+      .fpd-meta {
+        grid-template-columns: 1fr;
+      }
+
+      .fpd-actions {
+        flex-direction: column;
+      }
+
+      .fpd-btn {
+        width: 100%;
+      }
+
+      .fpd-thumbs {
+        gap: 0.55rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="logo-area">
+        <a href="index.html" style="display:flex; align-items:center; gap:0.65rem; text-decoration:none;">
+          <img src="images/powerhouse-logo.png" alt="Powerhouse Roasters Logo" class="logo-img" />
+          <span class="site-title">POWERHOUSE ROASTERS</span>
+        </a>
+      </div>
+
+      <nav class="nav">
+        <a href="index.html#coffees">Coffees</a>
+        <a href="our-story.html">Our Story</a>
+        <a href="index.html#wholesale">Wholesale</a>
+        <a href="index.html#contact">Contact</a>
+        <a href="cart.html" class="cart-link">Cart <span class="cart-count">0</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="fpd-page">
+    <div class="fpd-shell">
+      <section class="fpd-card">
+
+        <div class="fpd-gallery">
+          <div class="fpd-gallery-topbar">
+            <div class="fpd-badge">
+              <span class="fpd-badge-dot"></span>
+              Single Origin
+            </div>
+            <div class="fpd-counter">
+              <span id="galleryCount">1 / 3</span>
+            </div>
+          </div>
+
+          <div class="fpd-stage" aria-label="Ethiopia image gallery">
+            <button class="fpd-arrow prev" type="button" aria-label="Previous image">&#8592;</button>
+
+            <div class="fpd-slide active">
+              <img src="images/ethiopia-bag.jpg" alt="Ethiopia coffee bag" />
+            </div>
+
+            <div class="fpd-slide">
+              <img src="images/ethiopia-beans.jpg" alt="Ethiopia roasted beans" />
+            </div>
+
+            <div class="fpd-slide">
+              <img src="images/ethiopia-life.jpg" alt="Ethiopia lifestyle image" />
+            </div>
+
+            <button class="fpd-arrow next" type="button" aria-label="Next image">&#8594;</button>
+          </div>
+
+          <div class="fpd-thumbs">
+            <button class="fpd-thumb active" type="button" aria-label="Show bag image">
+              <img src="images/ethiopia-bag.jpg" alt="Ethiopia bag thumbnail" />
+            </button>
+
+            <button class="fpd-thumb" type="button" aria-label="Show beans image">
+              <img src="images/ethiopia-beans.jpg" alt="Ethiopia beans thumbnail" />
+            </button>
+
+            <button class="fpd-thumb" type="button" aria-label="Show lifestyle image">
+              <img src="images/ethiopia-life.jpg" alt="Ethiopia lifestyle thumbnail" />
+            </button>
+          </div>
+        </div>
+
+        <div class="fpd-info">
+          <span class="fpd-eyebrow">Wyoming Roasted • Power in Every Pour</span>
+
+          <h1 class="fpd-title">Ethiopia</h1>
+
+          <div class="fpd-subrow">
+            <span class="fpd-pill dark">Light Roast</span>
+          </div>
+
+          <p class="fpd-description">
+            Light roast with backbone. Citrus and natural sweetness move forward with purpose, carrying subtle floral notes. Clean, crisp, and precise without turning sharp.
+          </p>
+
+          <div class="fpd-tasting">
+            <span class="fpd-tasting-label">Tasting Notes</span>
+            <div class="fpd-tasting-notes">Floral • Citrus • Sweet</div>
+          </div>
+
+          <div class="fpd-meta">
+            <div class="fpd-meta-card">
+              <span class="fpd-meta-label">Origin</span>
+              <div class="fpd-meta-value">Ethiopia — Washed Process</div>
+            </div>
+
+            <div class="fpd-meta-card">
+              <span class="fpd-meta-label">Best For</span>
+              <div class="fpd-meta-value">Pour-over, lighter brews, clarity in the cup</div>
+            </div>
+
+            <div class="fpd-meta-card">
+              <span class="fpd-meta-label">Roasted In</span>
+              <div class="fpd-meta-value">Torrington, Wyoming</div>
+            </div>
+
+            <div class="fpd-meta-card">
+              <span class="fpd-meta-label">Size</span>
+              <div class="fpd-meta-value">12 oz / 340 g</div>
+            </div>
+          </div>
+
+          <div class="fpd-actions">
+            <a href="#" class="fpd-btn fpd-btn-primary add-to-cart" data-product="Ethiopia">Add to Cart</a>
+            <a href="index.html#coffees" class="fpd-btn fpd-btn-secondary">Back to Coffees</a>
+          </div>
+
+          <div class="fpd-shipping">
+            <strong>Free shipping on orders $75+</strong><br>
+            Contiguous U.S. only (48 states)
+          </div>
+        </div>
+
+      </section>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      const slides = document.querySelectorAll(".fpd-slide");
+      const thumbs = document.querySelectorAll(".fpd-thumb");
+      const prevBtn = document.querySelector(".fpd-arrow.prev");
+      const nextBtn = document.querySelector(".fpd-arrow.next");
+      const count = document.getElementById("galleryCount");
+
+      let current = 0;
+      let intervalId = null;
+      const slideDelay = 4500;
+
+      function render(index) {
+        slides.forEach((slide, i) => {
+          slide.classList.toggle("active", i === index);
+        });
+
+        thumbs.forEach((thumb, i) => {
+          thumb.classList.toggle("active", i === index);
+        });
+
+        count.textContent = (index + 1) + " / " + slides.length;
+      }
+
+      function goTo(index) {
+        current = (index + slides.length) % slides.length;
+        render(current);
+      }
+
+      function nextSlide() {
+        goTo(current + 1);
+      }
+
+      function prevSlide() {
+        goTo(current - 1);
+      }
+
+      function startAutoSlide() {
+        stopAutoSlide();
+        intervalId = setInterval(nextSlide, slideDelay);
+      }
+
+      function stopAutoSlide() {
+        if (intervalId) {
+          clearInterval(intervalId);
+          intervalId = null;
+        }
+      }
+
+      prevBtn.addEventListener("click", function () {
+        prevSlide();
+        startAutoSlide();
+      });
+
+      nextBtn.addEventListener("click", function () {
+        nextSlide();
+        startAutoSlide();
+      });
+
+      thumbs.forEach((thumb, index) => {
+        thumb.addEventListener("click", function () {
+          goTo(index);
+          startAutoSlide();
+        });
+      });
+
+      document.addEventListener("visibilitychange", function () {
+        if (document.hidden) {
+          stopAutoSlide();
+        } else {
+          startAutoSlide();
+        }
+      });
+
+      render(current);
+      startAutoSlide();
+    })();
+  </script>
+ <script src="cart.js"></script>
+</body>
+</html>

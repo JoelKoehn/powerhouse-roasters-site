@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cart | Powerhouse Roasters</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="logo-area">
+        <a href="index.html" style="display:flex; align-items:center; gap:0.65rem; text-decoration:none;">
+          <img src="images/powerhouse-logo.png" alt="Powerhouse Roasters Logo" class="logo-img" />
+          <span class="site-title">POWERHOUSE ROASTERS</span>
+        </a>
+      </div>
+
+      <nav class="nav">
+        <a href="index.html#coffees">Coffees</a>
+        <a href="our-story.html">Our Story</a>
+        <a href="index.html#wholesale">Wholesale</a>
+        <a href="index.html#contact">Contact</a>
+        <a href="cart.html" class="cart-link">Cart <span class="cart-count">0</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="cart-page">
+    <div class="cart-layout">
+      <section class="cart-panel">
+        <h1>Your Cart</h1>
+        <div id="cart-items"></div>
+      </section>
+
+      <aside class="cart-summary">
+        <h2>Order Summary</h2>
+
+        <div class="cart-summary-row">
+          <span>Subtotal</span>
+          <span id="cart-subtotal">$0.00</span>
+        </div>
+
+        <div id="cart-shipping-message" class="cart-shipping-note">
+          Free shipping on orders $75+ • U.S. shipping only. Alaska and Hawaii not currently supported.
+        </div>
+
+        <button id="checkout-button" class="checkout-btn is-disabled" disabled>
+          Checkout
+        </button>
+      </aside>
+    </div>
+  </main>
+
+  <script src="cart.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const btn = document.getElementById("checkout-button");
+    if (!btn) return;
+
+    btn.addEventListener("click", async function () {
+      const cart = JSON.parse(localStorage.getItem("powerhouse_cart") || "[]");
+      if (!cart.length) return;
+
+      btn.disabled = true;
+      btn.textContent = "Redirecting...";
+
+      try {
+        const response = await fetch("/.netlify/functions/create-checkout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ cart })
+        });
+
+   const text = await response.text();
+
+let data;
+try {
+  data = text ? JSON.parse(text) : {};
+} catch {
+  throw new Error(`Server returned invalid response: ${text || "empty body"}`);
+}
+
+if (!response.ok) {
+  throw new Error(data.error || `Checkout failed (${response.status})`);
+}
+
+if (!data.url) {
+  throw new Error("No checkout URL returned");
+}
+
+        window.location.href = data.url;
+      } catch (error) {
+        alert("Checkout error: " + error.message);
+        btn.disabled = false;
+        btn.textContent = "Checkout";
+      }
+    });
+  });
+</script>
+</body>
+</html>

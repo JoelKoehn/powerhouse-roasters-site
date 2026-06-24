@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Orders Dashboard | Powerhouse Roasters</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .dash-wrap {
+      width: 94%;
+      max-width: 1200px;
+      margin: 2rem auto 3rem;
+    }
+
+    .dash-card {
+      background: linear-gradient(145deg, rgba(255,255,255,0.82), rgba(255,255,255,0.68));
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 24px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.06);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .order-card {
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 18px;
+      padding: 1rem;
+      margin-top: 1rem;
+      background: rgba(255,255,255,0.78);
+    }
+
+    .order-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.75rem;
+    }
+
+    .order-title {
+      font-weight: 800;
+      font-size: 1.05rem;
+    }
+
+    .order-subtitle {
+      font-size: 0.8rem;
+      opacity: 0.75;
+      margin-top: 0.2rem;
+    }
+
+    .order-id {
+      font-size: 0.72rem;
+      opacity: 0.55;
+      margin-top: 0.2rem;
+      word-break: break-all;
+    }
+
+    .order-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.75rem;
+      margin-top: 0.8rem;
+    }
+
+    .order-box {
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 14px;
+      padding: 0.75rem;
+      background: #fff;
+    }
+
+    .dash-controls {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+
+    .dash-controls select,
+    .dash-controls input,
+    .dash-controls button {
+      padding: 0.7rem 0.9rem;
+      border-radius: 12px;
+      border: 1px solid rgba(0,0,0,0.12);
+      font: inherit;
+    }
+
+    .dash-controls button {
+      background: var(--gold);
+      color: #1c1406;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .dashboard-tabs {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    .dashboard-tab {
+      padding: 0.75rem 1rem;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.12);
+      background: #fff;
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .dashboard-tab.active {
+      background: var(--gold);
+      color: #1c1406;
+    }
+
+    .status-chip {
+      display: inline-block;
+      padding: 0.35rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      background: rgba(0,0,0,0.06);
+      margin-top: 0.35rem;
+    }
+
+    .items-list,
+    .roast-list {
+      margin: 0.4rem 0 0;
+      padding-left: 1rem;
+    }
+
+    .danger-btn {
+      background: #b91c1c !important;
+      color: #fff !important;
+    }
+
+    .muted-btn {
+      background: #111 !important;
+      color: #fff !important;
+    }
+
+    @media (max-width: 800px) {
+      .order-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="logo-area">
+        <a href="index.html" style="display:flex; align-items:center; gap:0.65rem; text-decoration:none;">
+          <img src="images/powerhouse-logo.png" alt="Powerhouse Roasters Logo" class="logo-img" />
+          <span class="site-title">POWERHOUSE ROASTERS</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="dash-wrap">
+    <div class="dash-card">
+      <h1>Orders Dashboard</h1>
+      <p>Retail orders should appear here automatically after Stripe payment.</p>
+      <div style="margin-top:1rem;">
+        <button
+          onclick="openCreateOrder()"
+          style="background:var(--gold); color:#1c1406; font-weight:800; border:none; border-radius:12px; padding:0.8rem 1rem; cursor:pointer;"
+        >
+          Create Order
+        </button>
+      </div>
+    </div>
+
+    <div class="dashboard-tabs">
+      <button
+        class="dashboard-tab active"
+        id="tab-active"
+        onclick="setView('active')"
+      >
+        Active
+      </button>
+      <button
+        class="dashboard-tab"
+        id="tab-review"
+        onclick="setView('review')"
+      >
+        Review
+      </button>
+      <button
+        class="dashboard-tab"
+        id="tab-completed"
+        onclick="setView('completed')"
+      >
+        Completed
+      </button>
+      <button
+        class="dashboard-tab"
+        id="tab-archived"
+        onclick="setView('archived')"
+      >
+        Archived
+      </button>
+    </div>
+
+    <div id="orders-root"></div>
+
+    <div
+      id="create-order-modal"
+      style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:9999; padding:2rem; overflow:auto;"
+    >
+      <div
+        style="max-width:760px; margin:2rem auto; background:#fff; border-radius:24px; padding:1.5rem; box-shadow:0 18px 40px rgba(0,0,0,0.2);"
+      >
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:1rem;">
+          <h2 style="margin:0;">Create Manual Order</h2>
+          <button
+            onclick="closeCreateOrder()"
+            style="border:none; background:#111; color:#fff; border-radius:10px; padding:0.55rem 0.85rem; cursor:pointer;"
+          >
+            Close
+          </button>
+        </div>
+
+        <div class="order-grid">
+          <div class="order-box">
+            <strong>Customer</strong>
+            <div style="margin-top:0.75rem; display:grid; gap:0.75rem;">
+              <input id="create-customer-name" placeholder="Customer name" />
+              <input id="create-customer-email" placeholder="Customer email" />
+            </div>
+          </div>
+
+          <div class="order-box">
+            <strong>Order Type</strong>
+            <div style="margin-top:0.75rem; display:grid; gap:0.75rem;">
+              <select id="create-order-type">
+                <option value="Retail">Retail</option>
+                <option value="Wholesale">Wholesale</option>
+              </select>
+
+              <select id="create-payment-method">
+                <option value="cash">Cash</option>
+                <option value="invoice">Invoice</option>
+                <option value="stripe">Stripe</option>
+                <option value="check">Check</option>
+              </select>
+
+              <select id="create-payment-status">
+                <option value="paid">Paid</option>
+                <option value="unpaid">Unpaid</option>
+                <option value="partial">Partial</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="order-box">
+            <strong>Item</strong>
+            <div style="margin-top:0.75rem; display:grid; gap:0.75rem;">
+              <select id="create-item-name">
+                <option value="Brazil">Brazil</option>
+                <option value="Guatemala">Guatemala</option>
+                <option value="Ethiopia">Ethiopia</option>
+                <option value="Range Line Roast">Range Line Roast</option>
+                <option value="Stillwater Decaf">Stillwater Decaf</option>
+                <option value="Full Power Dark">Full Power Dark</option>
+              </select>
+
+              <input id="create-item-quantity" type="number" min="1" value="1" placeholder="Quantity" />
+              <input id="create-item-price" type="number" min="0" step="1" value="1900" placeholder="Unit price in cents" />
+            </div>
+          </div>
+
+          <div class="order-box">
+            <strong>Notes</strong>
+            <div style="margin-top:0.75rem; display:grid; gap:0.75rem;">
+              <input id="create-order-notes" placeholder="Notes" />
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:1rem; display:flex; gap:0.75rem; flex-wrap:wrap;">
+          <button
+            onclick="submitCreateOrder()"
+            style="background:var(--gold); color:#1c1406; font-weight:800; border:none; border-radius:12px; padding:0.8rem 1rem; cursor:pointer;"
+          >
+            Save Order
+          </button>
+          <button
+            onclick="closeCreateOrder()"
+            style="background:#111; color:#fff; font-weight:800; border:none; border-radius:12px; padding:0.8rem 1rem; cursor:pointer;"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const adminKey = prompt("Enter dashboard key:");
+    let currentView = "active";
+
+    function normalizeDashboardStatus(order) {
+      if (!order.dashboardStatus) {
+        order.dashboardStatus = order.archived ? "archived" : "active";
+      }
+      return order.dashboardStatus;
+    }
+
+    function updateTabStyles() {
+      ["active", "review", "completed", "archived"].forEach((view) => {
+        const tab = document.getElementById(`tab-${view}`);
+        if (!tab) return;
+        tab.classList.toggle("active", currentView === view);
+      });
+    }
+
+    function setView(view) {
+      currentView = view;
+      updateTabStyles();
+      loadOrders();
+    }
+
+    async function loadOrders() {
+      const res = await fetch("/.netlify/functions/list-orders", {
+        headers: {
+          "x-admin-key": adminKey
+        }
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || "Failed to load orders");
+        return;
+      }
+
+      renderOrders(data.orders || []);
+    }
+
+    function renderOrders(orders) {
+      const root = document.getElementById("orders-root");
+
+      const filtered = orders.filter((order) => {
+        const status = normalizeDashboardStatus(order);
+        return status === currentView;
+      });
+
+      if (!filtered.length) {
+        root.innerHTML = `<div class="dash-card"><p>No ${currentView} orders.</p></div>`;
+        return;
+      }
+
+      root.innerHTML = filtered.map((order) => `
+        <div class="dash-card order-card">
+          <div class="order-top">
+            <div>
+              <div class="order-title">${order.customer?.name || "Order"}</div>
+              <div class="order-subtitle">
+                ${order.customer?.email || "No email"} • ${new Date(order.createdAt).toLocaleDateString()}
+              </div>
+              <div class="order-id">${order.id}</div>
+              <div class="status-chip">${(order.dashboardStatus || "active").toUpperCase()}</div>
+            </div>
+            <div>
+              <div><strong>$${((order.amountTotal || 0) / 100).toFixed(2)}</strong></div>
+              <div>${new Date(order.createdAt).toLocaleString()}</div>
+            </div>
+          </div>
+
+          <div class="order-grid">
+            <div class="order-box">
+              <strong>Items</strong>
+              <ul class="items-list">
+                ${(order.items || []).map((item) => `<li>${item.name} × ${item.quantity}</li>`).join("")}
+              </ul>
+            </div>
+
+            <div class="order-box">
+              <strong>Roast Needed</strong>
+              <ul class="roast-list">
+                ${(order.roastNeeded || []).map((item) => `<li>${item.name}: ${item.quantity}</li>`).join("")}
+              </ul>
+            </div>
+
+            <div class="order-box">
+              <strong>Ship To</strong>
+              <div>${order.shippingAddress?.line1 || ""}</div>
+              <div>${order.shippingAddress?.line2 || ""}</div>
+              <div>${order.shippingAddress?.city || ""}, ${order.shippingAddress?.state || ""} ${order.shippingAddress?.postal_code || ""}</div>
+              <div>${order.shippingAddress?.country || ""}</div>
+            </div>
+
+            <div class="order-box">
+              <strong>Status</strong>
+              <div>Payment: ${order.paymentStatus || ""}</div>
+              <div>Fulfillment: ${order.fulfillmentStatus || ""}</div>
+              <div>Shipping: ${order.shippingStatus || ""}</div>
+              <div>Tracking: ${order.trackingNumber || "—"}</div>
+            </div>
+          </div>
+
+          <div class="dash-controls">
+            <select id="fulfillment-${order.id}">
+              <option value="Needs Roast" ${order.fulfillmentStatus === "Needs Roast" ? "selected" : ""}>Needs Roast</option>
+              <option value="Roasted" ${order.fulfillmentStatus === "Roasted" ? "selected" : ""}>Roasted</option>
+              <option value="Packed" ${order.fulfillmentStatus === "Packed" ? "selected" : ""}>Packed</option>
+              <option value="Shipped" ${order.fulfillmentStatus === "Shipped" ? "selected" : ""}>Shipped</option>
+              <option value="Delivered" ${order.fulfillmentStatus === "Delivered" ? "selected" : ""}>Delivered</option>
+              <option value="DO NOT FULFILL" ${order.fulfillmentStatus === "DO NOT FULFILL" ? "selected" : ""}>DO NOT FULFILL</option>
+            </select>
+
+            <select id="shipping-${order.id}">
+              <option value="Unfulfilled" ${order.shippingStatus === "Unfulfilled" ? "selected" : ""}>Unfulfilled</option>
+              <option value="Label Created" ${order.shippingStatus === "Label Created" ? "selected" : ""}>Label Created</option>
+              <option value="Shipped" ${order.shippingStatus === "Shipped" ? "selected" : ""}>Shipped</option>
+              <option value="Delivered" ${order.shippingStatus === "Delivered" ? "selected" : ""}>Delivered</option>
+            </select>
+
+            <input id="tracking-${order.id}" placeholder="Tracking number" value="${order.trackingNumber || ""}" />
+            <input id="notes-${order.id}" placeholder="Notes" value="${order.notes || ""}" />
+
+            <button onclick="saveOrder('${order.id}')">Save</button>
+            <button onclick="setOrderStatus('${order.id}', 'review')">Send to Review</button>
+            <button onclick="setOrderStatus('${order.id}', 'completed')">Complete</button>
+            <button onclick="setOrderStatus('${order.id}', 'active')">Activate</button>
+            <button onclick="setOrderStatus('${order.id}', 'archived')" class="danger-btn">Archive</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    async function saveOrder(orderId) {
+      try {
+        const fulfillmentStatus =
+          document.getElementById(`fulfillment-${orderId}`)?.value || "";
+        const shippingStatus =
+          document.getElementById(`shipping-${orderId}`)?.value || "";
+        const trackingNumber =
+          document.getElementById(`tracking-${orderId}`)?.value || "";
+        const notes =
+          document.getElementById(`notes-${orderId}`)?.value || "";
+
+        const response = await fetch("/.netlify/functions/update-order", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-key": adminKey
+          },
+          body: JSON.stringify({
+            orderId,
+            fulfillmentStatus,
+            shippingStatus,
+            trackingNumber,
+            notes
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to save order");
+        }
+
+        alert(`Order ${orderId} updated successfully.`);
+        await loadOrders();
+      } catch (error) {
+        console.error("Save order error:", error);
+        alert(error.message || "Failed to save order");
+      }
+    }
+
+    async function setOrderStatus(orderId, status) {
+      try {
+        const response = await fetch("/.netlify/functions/update-order", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-key": adminKey
+          },
+          body: JSON.stringify({
+            orderId,
+            dashboardStatus: status
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to update status");
+        }
+
+        await loadOrders();
+      } catch (error) {
+        console.error("Status update error:", error);
+        alert(error.message || "Failed to update status");
+      }
+    }
+
+    async function archiveOrder(orderId) {
+      const confirmed = confirm(`Archive order ${orderId}?`);
+      if (!confirmed) return;
+
+      try {
+        const response = await fetch("/.netlify/functions/archive-order", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-key": adminKey
+          },
+          body: JSON.stringify({ orderId })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to archive order");
+        }
+
+        alert(`Order ${orderId} archived successfully.`);
+        await loadOrders();
+      } catch (error) {
+        console.error("Archive order error:", error);
+        alert(error.message || "Failed to archive order");
+      }
+    }
+
+    function openCreateOrder() {
+      document.getElementById("create-order-modal").style.display = "block";
+    }
+
+    function closeCreateOrder() {
+      document.getElementById("create-order-modal").style.display = "none";
+    }
+
+    async function submitCreateOrder() {
+      try {
+        const customerName =
+          document.getElementById("create-customer-name")?.value.trim() || "";
+        const customerEmail =
+          document.getElementById("create-customer-email")?.value.trim() || "";
+        const orderType =
+          document.getElementById("create-order-type")?.value || "Retail";
+        const paymentMethod =
+          document.getElementById("create-payment-method")?.value || "cash";
+        const paymentStatus =
+          document.getElementById("create-payment-status")?.value || "paid";
+        const itemName =
+          document.getElementById("create-item-name")?.value || "";
+        const itemQuantity = Number(
+          document.getElementById("create-item-quantity")?.value || 0
+        );
+        const itemPrice = Number(
+          document.getElementById("create-item-price")?.value || 0
+        );
+        const notes =
+          document.getElementById("create-order-notes")?.value.trim() || "";
+
+        if (!customerName) {
+          alert("Customer name is required.");
+          return;
+        }
+
+        if (!itemName || itemQuantity <= 0 || itemPrice < 0) {
+          alert("Enter valid item details.");
+          return;
+        }
+
+        const response = await fetch("/.netlify/functions/create-order", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-key": adminKey
+          },
+          body: JSON.stringify({
+            customer: {
+              name: customerName,
+              email: customerEmail
+            },
+            items: [
+              {
+                name: itemName,
+                quantity: itemQuantity,
+                unit_amount: itemPrice
+              }
+            ],
+            source: "Manual",
+            orderType,
+            paymentMethod,
+            paymentStatus,
+            dashboardStatus: "active",
+            notes
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to create order");
+        }
+
+        alert("Order created successfully.");
+        closeCreateOrder();
+        await loadOrders();
+      } catch (error) {
+        console.error("Create order error:", error);
+        alert(error.message || "Failed to create order");
+      }
+    }
+
+    updateTabStyles();
+    loadOrders();
+  </script>
+</body>
+</html>
+Please follow these steps. I am sharing the troubleshooting guide with you.
+1.Please open your downloads folder and delete all the pre-downloaded files.
+2. Then after that please open your task manager and close all the running applications
+3. Please ensure that there is no application running on your computer
+4. Further, please relaunch the check-in process by login to your Pearson VUE account or by clicking on the check-in URL received in your email confirmation.
+I request you to please follow these steps and if you face any issues again, feel free to connect with us, so that we can proceed further. we are always here to help you.
+
+
+

@@ -1,0 +1,28 @@
+functionsDirectory = "netlify/functions"
+functionsDirectoryOrigin = "default"
+plugins = []
+headers = []
+redirects = []
+
+[build]
+publish = "."
+publishOrigin = "default"
+functions = "netlify/functions"
+
+  [build.environment]
+
+  [build.processing]
+
+    [build.processing.css]
+
+    [build.processing.html]
+
+    [build.processing.images]
+
+    [build.processing.js]
+
+  [build.services]
+
+[functions]
+
+  [functions."*"]

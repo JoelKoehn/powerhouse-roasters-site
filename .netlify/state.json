@@ -1,0 +1,21 @@
+{
+	"siteId": "bb245caf-a576-47f9-b10d-8164e7041645",
+	"geolocation": {
+		"data": {
+			"city": "Kimball",
+			"country": {
+				"code": "US",
+				"name": "United States"
+			},
+			"subdivision": {
+				"code": "NE",
+				"name": "Nebraska"
+			},
+			"timezone": "America/Denver",
+			"latitude": 41.2336,
+			"longitude": -103.6611,
+			"postalCode": "69145"
+		},
+		"timestamp": 1776546282010
+	}
+}
