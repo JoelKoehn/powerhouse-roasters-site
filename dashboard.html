@@ -1280,13 +1280,15 @@
     const now = new Date();
     const thisMonth = now.getFullYear() * 100 + (now.getMonth() + 1);
 
-    const monthOrders = allOrders.filter(o => {
+    const completedOrders = allOrders.filter(o => normalizeDashboardStatus(o) === "completed");
+
+    const monthOrders = completedOrders.filter(o => {
       const d = new Date(o.createdAt);
       return d.getFullYear() * 100 + (d.getMonth() + 1) === thisMonth;
     });
 
     const revenue = monthOrders.reduce((s, o) => s + (o.amountTotal || 0), 0);
-    const uniqueEmails = new Set(allOrders.map(o => o.customer?.email).filter(Boolean));
+    const uniqueEmails = new Set(completedOrders.map(o => o.customer?.email).filter(Boolean));
 
     document.getElementById("mkt-revenue").textContent = "$" + (revenue / 100).toFixed(2);
     document.getElementById("mkt-orders").textContent = monthOrders.length;
@@ -1294,7 +1296,7 @@
 
     // Best sellers
     const blendCounts = {};
-    allOrders.forEach(o => {
+    completedOrders.forEach(o => {
       (o.items || []).forEach(i => {
         blendCounts[i.name] = (blendCounts[i.name] || 0) + (i.quantity || 1);
       });
@@ -1306,11 +1308,11 @@
             <span style="font-weight:700;">${i + 1}. ${name}</span>
             <span>${qty} units sold</span>
           </div>`).join("")
-      : `<div class="empty-state">No order data yet.</div>`;
+      : `<div class="empty-state">No completed orders yet.</div>`;
 
     // Customer list
     const customerMap = {};
-    allOrders.forEach(o => {
+    completedOrders.forEach(o => {
       const email = o.customer?.email || "unknown";
       if (!customerMap[email]) {
         customerMap[email] = { name: o.customer?.name || "—", email, orders: 0, total: 0 };
