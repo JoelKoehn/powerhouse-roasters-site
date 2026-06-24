@@ -1,4 +1,5 @@
 const { getStore, connectLambda } = require("@netlify/blobs");
+const { isAuthorized, unauthorizedResponse } = require("./helpers/auth");
 
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") {
@@ -8,17 +9,8 @@ exports.handler = async (event) => {
     };
   }
 
-  const adminKey =
-    event.headers["x-admin-key"] || event.headers["X-Admin-Key"];
-
-  if (
-    !process.env.ADMIN_DASHBOARD_KEY ||
-    adminKey !== process.env.ADMIN_DASHBOARD_KEY
-  ) {
-    return {
-      statusCode: 401,
-      body: JSON.stringify({ error: "Unauthorized" })
-    };
+  if (!isAuthorized(event)) {
+    return unauthorizedResponse();
   }
 
   try {

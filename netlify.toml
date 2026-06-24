@@ -1,8 +1,12 @@
 functionsDirectory = "netlify/functions"
 functionsDirectoryOrigin = "default"
 plugins = []
-headers = []
 redirects = []
+
+[[headers]]
+  for = "/dashboard.html"
+  [headers.values]
+    X-Robots-Tag = "noindex"
 
 [build]
 publish = "."

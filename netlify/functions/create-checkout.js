@@ -1,36 +1,37 @@
 const Stripe = require("stripe");
 
 const FREE_SHIPPING_THRESHOLD = 7500; // $75.00 in cents
+const PRODUCT_PRICE_CENTS = 1900; // $19.00 — update here to change all product prices
 
 const PRODUCT_MAP = {
   "Brazil": {
     name: "Brazil - Smooth & Balanced",
-    unit_amount: 1900,
+    unit_amount: PRODUCT_PRICE_CENTS,
     image: "https://powerhouseroasters.com/images/brazil-bag.jpg"
   },
   "Guatemala": {
     name: "Guatemala - Bright & Structured",
-    unit_amount: 1900,
+    unit_amount: PRODUCT_PRICE_CENTS,
     image: "https://powerhouseroasters.com/images/guate-bag.jpg"
   },
   "Ethiopia": {
     name: "Ethiopia - Floral & Citrus",
-    unit_amount: 1900,
+    unit_amount: PRODUCT_PRICE_CENTS,
     image: "https://powerhouseroasters.com/images/ethiopia-bag.jpg"
   },
   "Range Line Roast": {
     name: "Range Line Roast - House Blend",
-    unit_amount: 1900,
+    unit_amount: PRODUCT_PRICE_CENTS,
     image: "https://powerhouseroasters.com/images/rangeline-bag.jpg"
   },
   "Stillwater Decaf": {
     name: "Stillwater Decaf - Smooth & Clean",
-    unit_amount: 1900,
+    unit_amount: PRODUCT_PRICE_CENTS,
     image: "https://powerhouseroasters.com/images/swater-bag.jpg"
   },
   "Full Power Dark": {
     name: "Full Power Dark - Bold & Rich",
-    unit_amount: 1900,
+    unit_amount: PRODUCT_PRICE_CENTS,
     image: "https://powerhouseroasters.com/images/fpdark-bag.jpg"
   }
 };
