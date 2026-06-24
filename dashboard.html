@@ -3,146 +3,333 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Orders Dashboard | Powerhouse Roasters</title>
+  <title>Ops Dashboard | Powerhouse Roasters</title>
   <link rel="stylesheet" href="styles.css" />
   <style>
+    /* ── Layout ── */
     .dash-wrap {
       width: 94%;
       max-width: 1200px;
-      margin: 2rem auto 3rem;
+      margin: 1.5rem auto 4rem;
     }
 
+    /* ── Nav tabs ── */
+    .ops-nav {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+      border-bottom: 2px solid rgba(0,0,0,0.08);
+      padding-bottom: 0.75rem;
+    }
+    .ops-tab {
+      padding: 0.6rem 1.1rem;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.12);
+      background: #fff;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.9rem;
+      transition: background 0.15s;
+    }
+    .ops-tab.active {
+      background: var(--gold);
+      color: #1c1406;
+      border-color: var(--gold);
+    }
+    .ops-section { display: none; }
+    .ops-section.active { display: block; }
+
+    /* ── Cards ── */
     .dash-card {
-      background: linear-gradient(145deg, rgba(255,255,255,0.82), rgba(255,255,255,0.68));
+      background: linear-gradient(145deg, rgba(255,255,255,0.88), rgba(255,255,255,0.72));
       border: 1px solid rgba(0,0,0,0.08);
-      border-radius: 24px;
-      box-shadow: 0 18px 40px rgba(0,0,0,0.06);
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
       padding: 1.25rem;
       margin-bottom: 1rem;
     }
-
-    .order-card {
-      border: 1px solid rgba(0,0,0,0.08);
-      border-radius: 18px;
-      padding: 1rem;
-      margin-top: 1rem;
-      background: rgba(255,255,255,0.78);
+    .dash-card h2 {
+      margin: 0 0 0.9rem;
+      font-size: 1.1rem;
     }
 
+    /* ── Grid ── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+    @media (max-width: 700px) {
+      .two-col, .three-col { grid-template-columns: 1fr; }
+    }
+
+    /* ── Form bits ── */
+    .field-group {
+      display: grid;
+      gap: 0.6rem;
+    }
+    .field-group label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      opacity: 0.65;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .field-group input,
+    .field-group select,
+    .field-group textarea {
+      padding: 0.65rem 0.85rem;
+      border-radius: 12px;
+      border: 1px solid rgba(0,0,0,0.14);
+      font: inherit;
+      background: #fff;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .field-group textarea { min-height: 80px; resize: vertical; }
+
+    /* ── Buttons ── */
+    .btn {
+      padding: 0.65rem 1rem;
+      border-radius: 12px;
+      border: none;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      font-size: 0.88rem;
+    }
+    .btn-gold { background: var(--gold); color: #1c1406; }
+    .btn-dark { background: #1c1406; color: #fff; }
+    .btn-red { background: #b91c1c; color: #fff; }
+    .btn-gray { background: rgba(0,0,0,0.08); color: #333; }
+    .btn-sm { padding: 0.4rem 0.75rem; font-size: 0.8rem; }
+
+    .btn-row {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      margin-top: 0.9rem;
+    }
+
+    /* ── Inventory bars ── */
+    .inv-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.6rem;
+    }
+    .inv-label { width: 170px; font-weight: 700; font-size: 0.9rem; flex-shrink: 0; }
+    .inv-bar-bg {
+      flex: 1;
+      height: 12px;
+      background: rgba(0,0,0,0.08);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .inv-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: var(--gold);
+      transition: width 0.3s;
+    }
+    .inv-bar-fill.low { background: #ef4444; }
+    .inv-val { width: 80px; text-align: right; font-size: 0.88rem; font-weight: 700; }
+    .inv-alert { color: #b91c1c; font-size: 0.78rem; font-weight: 700; }
+
+    /* ── Blend formula editor ── */
+    .blend-formula-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.5rem;
+    }
+    .blend-formula-row select { flex: 2; }
+    .blend-formula-row input[type=number] { flex: 1; min-width: 70px; }
+    .pct-total {
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin: 0.5rem 0;
+    }
+    .pct-ok { color: #16a34a; }
+    .pct-bad { color: #b91c1c; }
+
+    /* ── Roast log ── */
+    .log-row {
+      display: grid;
+      grid-template-columns: 90px 1fr 80px 80px auto;
+      gap: 0.75rem;
+      align-items: center;
+      padding: 0.65rem 0;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      font-size: 0.88rem;
+    }
+    .log-row:last-child { border-bottom: none; }
+    .log-row .roast-type-chip {
+      display: inline-block;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 800;
+    }
+    .chip-shelf { background: #d1fae5; color: #065f46; }
+    .chip-order { background: #dbeafe; color: #1e40af; }
+    @media (max-width: 700px) {
+      .log-row { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* ── Order cards ── */
+    .order-card {
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 16px;
+      padding: 1rem;
+      margin-bottom: 0.9rem;
+      background: rgba(255,255,255,0.85);
+    }
     .order-top {
       display: flex;
       justify-content: space-between;
       gap: 1rem;
       flex-wrap: wrap;
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.7rem;
     }
-
-    .order-title {
-      font-weight: 800;
-      font-size: 1.05rem;
-    }
-
-    .order-subtitle {
-      font-size: 0.8rem;
-      opacity: 0.75;
-      margin-top: 0.2rem;
-    }
-
-    .order-id {
-      font-size: 0.72rem;
-      opacity: 0.55;
-      margin-top: 0.2rem;
-      word-break: break-all;
-    }
+    .order-title { font-weight: 800; font-size: 1rem; }
+    .order-subtitle { font-size: 0.78rem; opacity: 0.7; margin-top: 0.15rem; }
+    .order-id { font-size: 0.68rem; opacity: 0.45; margin-top: 0.15rem; word-break: break-all; }
 
     .order-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.75rem;
-      margin-top: 0.8rem;
+      gap: 0.65rem;
+      margin-top: 0.75rem;
     }
+    @media (max-width: 700px) { .order-grid { grid-template-columns: 1fr; } }
 
     .order-box {
-      border: 1px solid rgba(0,0,0,0.08);
-      border-radius: 14px;
-      padding: 0.75rem;
-      background: #fff;
-    }
-
-    .dash-controls {
-      display: flex;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-      margin-top: 1rem;
-    }
-
-    .dash-controls select,
-    .dash-controls input,
-    .dash-controls button {
-      padding: 0.7rem 0.9rem;
+      border: 1px solid rgba(0,0,0,0.07);
       border-radius: 12px;
+      padding: 0.65rem;
+      background: #fff;
+      font-size: 0.88rem;
+    }
+    .order-box strong { display: block; margin-bottom: 0.35rem; }
+
+    .status-chip {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      background: rgba(0,0,0,0.06);
+      margin-top: 0.3rem;
+    }
+
+    .order-controls {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.75rem;
+      align-items: center;
+    }
+    .order-controls select,
+    .order-controls input {
+      padding: 0.5rem 0.7rem;
+      border-radius: 10px;
       border: 1px solid rgba(0,0,0,0.12);
       font: inherit;
-    }
-
-    .dash-controls button {
-      background: var(--gold);
-      color: #1c1406;
-      font-weight: 800;
-      cursor: pointer;
+      font-size: 0.85rem;
     }
 
     .dashboard-tabs {
       display: flex;
-      gap: 0.75rem;
+      gap: 0.6rem;
       flex-wrap: wrap;
       margin-bottom: 1rem;
     }
-
     .dashboard-tab {
-      padding: 0.75rem 1rem;
+      padding: 0.6rem 1rem;
       border-radius: 999px;
       border: 1px solid rgba(0,0,0,0.12);
       background: #fff;
       cursor: pointer;
       font-weight: 800;
+      font-size: 0.88rem;
+    }
+    .dashboard-tab.active { background: var(--gold); color: #1c1406; }
+
+    /* ── Marketing stats ── */
+    .stat-card {
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 16px;
+      padding: 1.1rem;
+      text-align: center;
+    }
+    .stat-number { font-size: 2rem; font-weight: 900; color: var(--gold); }
+    .stat-label { font-size: 0.8rem; opacity: 0.65; margin-top: 0.2rem; }
+
+    .customer-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 0.65rem 0;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      gap: 1rem;
+      font-size: 0.88rem;
+    }
+    .customer-row:last-child { border-bottom: none; }
+
+    /* ── Alerts ── */
+    .alert-banner {
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #b91c1c;
     }
 
-    .dashboard-tab.active {
-      background: var(--gold);
-      color: #1c1406;
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 9999;
+      padding: 2rem 1rem;
+      overflow-y: auto;
     }
+    .modal-box {
+      max-width: 640px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 20px;
+      padding: 1.5rem;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.1rem;
+    }
+    .modal-header h2 { margin: 0; }
 
-    .status-chip {
-      display: inline-block;
-      padding: 0.35rem 0.65rem;
+    /* ── Misc ── */
+    .items-list, .roast-list { margin: 0.3rem 0 0; padding-left: 1.1rem; }
+    .empty-state { padding: 2rem; text-align: center; opacity: 0.5; }
+    .low-stock-badge {
+      background: #fee2e2;
+      color: #b91c1c;
+      padding: 0.15rem 0.45rem;
       border-radius: 999px;
-      font-size: 0.78rem;
+      font-size: 0.7rem;
       font-weight: 800;
-      background: rgba(0,0,0,0.06);
-      margin-top: 0.35rem;
+      margin-left: 0.4rem;
     }
-
-    .items-list,
-    .roast-list {
-      margin: 0.4rem 0 0;
-      padding-left: 1rem;
-    }
-
-    .danger-btn {
-      background: #b91c1c !important;
-      color: #fff !important;
-    }
-
-    .muted-btn {
-      background: #111 !important;
-      color: #fff !important;
-    }
-
-    @media (max-width: 800px) {
-      .order-grid {
-        grid-template-columns: 1fr;
-      }
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 900;
+      margin: 0 0 1.25rem;
     }
   </style>
 </head>
@@ -155,463 +342,947 @@
           <span class="site-title">POWERHOUSE ROASTERS</span>
         </a>
       </div>
+      <div style="font-size:0.8rem; opacity:0.6; margin-left:auto;">Operations Dashboard</div>
     </div>
   </header>
 
   <main class="dash-wrap">
-    <div class="dash-card">
-      <h1>Orders Dashboard</h1>
-      <p>Retail orders should appear here automatically after Stripe payment.</p>
-      <div style="margin-top:1rem;">
-        <button
-          onclick="openCreateOrder()"
-          style="background:var(--gold); color:#1c1406; font-weight:800; border:none; border-radius:12px; padding:0.8rem 1rem; cursor:pointer;"
-        >
-          Create Order
-        </button>
+
+    <!-- Top nav -->
+    <nav class="ops-nav">
+      <button class="ops-tab active" onclick="showSection('orders')">Orders</button>
+      <button class="ops-tab" onclick="showSection('roast')">Roast Log</button>
+      <button class="ops-tab" onclick="showSection('inventory')">Inventory</button>
+      <button class="ops-tab" onclick="showSection('blends')">Blends</button>
+      <button class="ops-tab" onclick="showSection('marketing')">Marketing</button>
+    </nav>
+
+    <!-- ═══════════════════════════════════════════════ ORDERS ═══════ -->
+    <section id="section-orders" class="ops-section active">
+      <div class="dash-card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
+          <div>
+            <div class="section-title">Orders</div>
+            <p style="margin:0; font-size:0.9rem; opacity:0.65;">Stripe orders appear automatically. Manual orders can be created below.</p>
+          </div>
+          <button class="btn btn-gold" onclick="openCreateOrder()">+ Create Order</button>
+        </div>
+      </div>
+
+      <div class="dashboard-tabs">
+        <button class="dashboard-tab active" id="tab-active" onclick="setOrderView('active')">Active</button>
+        <button class="dashboard-tab" id="tab-review" onclick="setOrderView('review')">Review</button>
+        <button class="dashboard-tab" id="tab-completed" onclick="setOrderView('completed')">Completed</button>
+        <button class="dashboard-tab" id="tab-archived" onclick="setOrderView('archived')">Archived</button>
+      </div>
+
+      <div id="orders-root"></div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════ ROAST LOG ══════ -->
+    <section id="section-roast" class="ops-section">
+      <div class="section-title">Roast Log</div>
+
+      <div class="dash-card">
+        <h2>Log a Roast Session</h2>
+        <div class="two-col">
+          <div class="field-group">
+            <label>Blend</label>
+            <select id="roast-blend"></select>
+          </div>
+          <div class="field-group">
+            <label>Roast Type</label>
+            <select id="roast-type">
+              <option value="shelf">Shelf Roast — adds to shelf stock</option>
+              <option value="order">Order Roast — fulfills a specific order</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Lbs Roasted</label>
+            <input id="roast-lbs" type="number" min="0.1" step="0.1" placeholder="e.g. 20" />
+          </div>
+          <div class="field-group">
+            <label>Date</label>
+            <input id="roast-date" type="date" />
+          </div>
+          <div class="field-group" id="order-id-field" style="display:none;">
+            <label>Order ID (for order roasts)</label>
+            <input id="roast-order-id" placeholder="Order ID" />
+          </div>
+          <div class="field-group">
+            <label>Notes</label>
+            <input id="roast-notes" placeholder="Optional notes" />
+          </div>
+        </div>
+
+        <div id="roast-green-preview" style="margin-top:0.75rem; font-size:0.88rem; opacity:0.7;"></div>
+
+        <div class="btn-row">
+          <button class="btn btn-gold" onclick="submitRoast()">Log Roast Session</button>
+        </div>
+      </div>
+
+      <div class="dash-card">
+        <h2>Roast History</h2>
+        <div id="roast-log-list"><div class="empty-state">Loading…</div></div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════ INVENTORY ══════ -->
+    <section id="section-inventory" class="ops-section">
+      <div class="section-title">Inventory</div>
+
+      <div id="inv-alerts"></div>
+
+      <div class="two-col">
+        <div class="dash-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.9rem;">
+            <h2 style="margin:0;">Green Beans</h2>
+            <button class="btn btn-sm btn-dark" onclick="openInvEdit('green')">Edit</button>
+          </div>
+          <div id="inv-green-bars"></div>
+        </div>
+
+        <div class="dash-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.9rem;">
+            <h2 style="margin:0;">Shelf Stock (Roasted)</h2>
+            <button class="btn btn-sm btn-dark" onclick="openInvEdit('shelf')">Edit</button>
+          </div>
+          <div id="inv-shelf-bars"></div>
+        </div>
+      </div>
+
+      <div class="dash-card">
+        <h2>Set Low-Stock Threshold</h2>
+        <p style="font-size:0.88rem; opacity:0.65; margin:0 0 0.75rem;">Alerts appear when any item falls below this amount (lbs).</p>
+        <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+          <input id="threshold-input" type="number" min="0" step="1" value="20"
+            style="width:100px; padding:0.55rem 0.75rem; border-radius:10px; border:1px solid rgba(0,0,0,0.14); font:inherit;" />
+          <button class="btn btn-gold" onclick="saveThreshold()">Save Threshold</button>
+          <span id="threshold-saved" style="font-size:0.85rem; color:#16a34a; display:none;">Saved ✓</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════ BLENDS ══════ -->
+    <section id="section-blends" class="ops-section">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap; gap:0.75rem;">
+        <div class="section-title" style="margin:0;">Blend Formulas</div>
+        <button class="btn btn-dark" onclick="addBlend()">+ New Blend</button>
+      </div>
+
+      <div id="blends-root"></div>
+
+      <div class="btn-row">
+        <button class="btn btn-gold" onclick="saveAllBlends()">Save All Blends</button>
+        <span id="blends-saved" style="font-size:0.85rem; color:#16a34a; display:none; margin-top:0.5rem;">Saved ✓</span>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════ MARKETING ══════ -->
+    <section id="section-marketing" class="ops-section">
+      <div class="section-title">Marketing</div>
+
+      <div class="three-col" style="margin-bottom:1rem;">
+        <div class="stat-card">
+          <div class="stat-number" id="mkt-revenue">—</div>
+          <div class="stat-label">Revenue This Month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="mkt-orders">—</div>
+          <div class="stat-label">Orders This Month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="mkt-customers">—</div>
+          <div class="stat-label">Unique Customers</div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="dash-card">
+          <h2>Best Selling Blends</h2>
+          <div id="mkt-bestsellers"></div>
+        </div>
+        <div class="dash-card">
+          <h2>Customer List</h2>
+          <div id="mkt-customers-list"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── Create Order Modal ── -->
+  <div class="modal-overlay" id="create-order-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2>Create Manual Order</h2>
+        <button class="btn btn-dark btn-sm" onclick="closeCreateOrder()">Close</button>
+      </div>
+
+      <div class="two-col">
+        <div class="field-group">
+          <label>Customer Name</label>
+          <input id="create-customer-name" placeholder="Full name" />
+        </div>
+        <div class="field-group">
+          <label>Customer Email</label>
+          <input id="create-customer-email" placeholder="email@example.com" />
+        </div>
+        <div class="field-group">
+          <label>Order Type</label>
+          <select id="create-order-type">
+            <option value="Retail">Retail</option>
+            <option value="Wholesale">Wholesale</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>Payment Method</label>
+          <select id="create-payment-method">
+            <option value="cash">Cash</option>
+            <option value="invoice">Invoice</option>
+            <option value="stripe">Stripe</option>
+            <option value="check">Check</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>Payment Status</label>
+          <select id="create-payment-status">
+            <option value="paid">Paid</option>
+            <option value="unpaid">Unpaid</option>
+            <option value="partial">Partial</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>Item</label>
+          <select id="create-item-name">
+            <option value="Brazil">Brazil</option>
+            <option value="Guatemala">Guatemala</option>
+            <option value="Ethiopia">Ethiopia</option>
+            <option value="Range Line Roast">Range Line Roast</option>
+            <option value="Stillwater Decaf">Stillwater Decaf</option>
+            <option value="Full Power Dark">Full Power Dark</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>Quantity</label>
+          <input id="create-item-quantity" type="number" min="1" value="1" />
+        </div>
+        <div class="field-group">
+          <label>Unit Price (cents)</label>
+          <input id="create-item-price" type="number" min="0" step="1" value="1900" />
+        </div>
+        <div class="field-group" style="grid-column: span 2;">
+          <label>Notes</label>
+          <input id="create-order-notes" placeholder="Optional notes" />
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-gold" onclick="submitCreateOrder()">Save Order</button>
+        <button class="btn btn-gray" onclick="closeCreateOrder()">Cancel</button>
       </div>
     </div>
+  </div>
 
-    <div class="dashboard-tabs">
-      <button
-        class="dashboard-tab active"
-        id="tab-active"
-        onclick="setView('active')"
-      >
-        Active
-      </button>
-      <button
-        class="dashboard-tab"
-        id="tab-review"
-        onclick="setView('review')"
-      >
-        Review
-      </button>
-      <button
-        class="dashboard-tab"
-        id="tab-completed"
-        onclick="setView('completed')"
-      >
-        Completed
-      </button>
-      <button
-        class="dashboard-tab"
-        id="tab-archived"
-        onclick="setView('archived')"
-      >
-        Archived
-      </button>
+  <!-- ── Inventory Edit Modal ── -->
+  <div class="modal-overlay" id="inv-edit-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 id="inv-edit-title">Edit Inventory</h2>
+        <button class="btn btn-dark btn-sm" onclick="closeInvEdit()">Close</button>
+      </div>
+      <div id="inv-edit-fields"></div>
+      <div class="btn-row">
+        <button class="btn btn-gold" onclick="submitInvEdit()">Save Inventory</button>
+        <button class="btn btn-gray" onclick="closeInvEdit()">Cancel</button>
+      </div>
     </div>
+  </div>
 
-    <div id="orders-root"></div>
+  <!-- ── Login overlay ── -->
+  <div id="login-overlay" style="
+    position:fixed; inset:0; background:var(--dark,#1c1406);
+    z-index:99999; display:flex; align-items:center; justify-content:center; padding:1.5rem;">
+    <div style="background:#fff; border-radius:20px; padding:2rem; width:100%; max-width:360px; text-align:center;">
+      <img src="images/powerhouse-logo.png" alt="" style="height:56px; margin-bottom:1rem;" />
+      <div style="font-size:1.15rem; font-weight:900; margin-bottom:0.25rem;">POWERHOUSE ROASTERS</div>
+      <div style="font-size:0.85rem; opacity:0.55; margin-bottom:1.5rem;">Operations Dashboard</div>
+      <input id="login-key-input" type="password" placeholder="Dashboard key"
+        style="width:100%; box-sizing:border-box; padding:0.8rem 1rem; border-radius:12px; border:1.5px solid rgba(0,0,0,0.15); font:inherit; font-size:1rem; margin-bottom:0.75rem;"
+        onkeydown="if(event.key==='Enter') submitLogin()" />
+      <button onclick="submitLogin()"
+        style="width:100%; padding:0.85rem; background:var(--gold,#c8a951); color:#1c1406; font-weight:900; font-size:1rem; border:none; border-radius:12px; cursor:pointer;">
+        Sign In
+      </button>
+      <div id="login-error" style="color:#b91c1c; font-size:0.85rem; margin-top:0.75rem; display:none;">Incorrect key. Try again.</div>
+    </div>
+  </div>
 
-    <div
-      id="create-order-modal"
-      style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:9999; padding:2rem; overflow:auto;"
-    >
-      <div
-        style="max-width:760px; margin:2rem auto; background:#fff; border-radius:24px; padding:1.5rem; box-shadow:0 18px 40px rgba(0,0,0,0.2);"
-      >
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:1rem;">
-          <h2 style="margin:0;">Create Manual Order</h2>
-          <button
-            onclick="closeCreateOrder()"
-            style="border:none; background:#111; color:#fff; border-radius:10px; padding:0.55rem 0.85rem; cursor:pointer;"
-          >
-            Close
-          </button>
+  <script>
+  // ═══════════════════════════════════════════════════════════
+  //  AUTH
+  // ═══════════════════════════════════════════════════════════
+  let adminKey = sessionStorage.getItem("ph_admin_key") || "";
+
+  function submitLogin() {
+    const val = document.getElementById("login-key-input").value.trim();
+    if (!val) return;
+    // Verify key against the API before granting access
+    fetch("/.netlify/functions/list-orders", {
+      headers: { "x-admin-key": val }
+    }).then(res => {
+      if (res.ok || res.status === 200) {
+        adminKey = val;
+        sessionStorage.setItem("ph_admin_key", val);
+        document.getElementById("login-overlay").style.display = "none";
+        init();
+      } else {
+        document.getElementById("login-error").style.display = "block";
+        document.getElementById("login-key-input").value = "";
+        document.getElementById("login-key-input").focus();
+      }
+    }).catch(() => {
+      // Offline / dev — just accept the key and proceed
+      adminKey = val;
+      sessionStorage.setItem("ph_admin_key", val);
+      document.getElementById("login-overlay").style.display = "none";
+      init();
+    });
+  }
+
+  // If we already have a cached key, skip login
+  if (adminKey) {
+    document.getElementById("login-overlay").style.display = "none";
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  STATE
+  // ═══════════════════════════════════════════════════════════
+  let opsData = { blends: {}, inventory: { green: {}, shelf: {} }, roastLog: [] };
+  let allOrders = [];
+  let currentOrderView = "active";
+  let invEditType = "green"; // "green" or "shelf"
+  let lowThreshold = Number(localStorage.getItem("ph_threshold") || 20);
+
+  const BLEND_NAMES = [
+    "Full Power Dark", "Range Line Roast", "Brazil",
+    "Guatemala", "Ethiopia", "Stillwater Decaf"
+  ];
+  const ORIGINS = [
+    "Brazil", "Guatemala", "Ethiopia", "Decaf Colombia", "Colombia",
+    "Kenya", "Honduras", "Peru", "Burundi"
+  ];
+
+  // ═══════════════════════════════════════════════════════════
+  //  NAV
+  // ═══════════════════════════════════════════════════════════
+  function showSection(name) {
+    document.querySelectorAll(".ops-section").forEach(s => s.classList.remove("active"));
+    document.querySelectorAll(".ops-tab").forEach(t => t.classList.remove("active"));
+    document.getElementById(`section-${name}`).classList.add("active");
+    event.currentTarget.classList.add("active");
+
+    if (name === "orders" && allOrders.length === 0) loadOrders();
+    if (name === "marketing") renderMarketing();
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  OPS DATA (blends, inventory, roast log)
+  // ═══════════════════════════════════════════════════════════
+  async function loadOpsData() {
+    try {
+      const res = await fetch("/.netlify/functions/get-ops-data", {
+        headers: { "x-admin-key": adminKey }
+      });
+      if (!res.ok) return;
+      opsData = await res.json();
+    } catch (e) { console.error("loadOpsData", e); }
+
+    renderInventory();
+    renderBlends();
+    populateRoastBlendSelect();
+    renderRoastLog();
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  INVENTORY
+  // ═══════════════════════════════════════════════════════════
+  function renderInventory() {
+    document.getElementById("threshold-input").value = lowThreshold;
+    renderInvBars("inv-green-bars", opsData.inventory.green || {}, "green");
+    renderInvBars("inv-shelf-bars", opsData.inventory.shelf || {}, "shelf");
+    renderInvAlerts();
+  }
+
+  function renderInvBars(containerId, data, type) {
+    const entries = Object.entries(data);
+    if (!entries.length) {
+      document.getElementById(containerId).innerHTML = `<div class="empty-state">No items tracked yet.</div>`;
+      return;
+    }
+    const max = Math.max(...entries.map(([, v]) => v), lowThreshold * 2, 1);
+    document.getElementById(containerId).innerHTML = entries.map(([name, lbs]) => {
+      const pct = Math.min(100, (lbs / max) * 100);
+      const isLow = lbs < lowThreshold;
+      return `
+        <div class="inv-item">
+          <div class="inv-label">${name}${isLow ? '<span class="low-stock-badge">LOW</span>' : ''}</div>
+          <div class="inv-bar-bg">
+            <div class="inv-bar-fill${isLow ? ' low' : ''}" style="width:${pct}%"></div>
+          </div>
+          <div class="inv-val">${lbs} lbs</div>
+        </div>`;
+    }).join("");
+  }
+
+  function renderInvAlerts() {
+    const alerts = [];
+    for (const [origin, lbs] of Object.entries(opsData.inventory.green || {})) {
+      if (lbs < lowThreshold) alerts.push(`Green: ${origin} is low (${lbs} lbs)`);
+    }
+    for (const [blend, lbs] of Object.entries(opsData.inventory.shelf || {})) {
+      if (lbs < lowThreshold) alerts.push(`Shelf: ${blend} is low (${lbs} lbs)`);
+    }
+    const el = document.getElementById("inv-alerts");
+    el.innerHTML = alerts.map(a => `<div class="alert-banner">⚠ ${a}</div>`).join("");
+  }
+
+  function saveThreshold() {
+    lowThreshold = Number(document.getElementById("threshold-input").value) || 0;
+    localStorage.setItem("ph_threshold", lowThreshold);
+    renderInventory();
+    const saved = document.getElementById("threshold-saved");
+    saved.style.display = "inline";
+    setTimeout(() => { saved.style.display = "none"; }, 2000);
+  }
+
+  function openInvEdit(type) {
+    invEditType = type;
+    const data = opsData.inventory[type] || {};
+    document.getElementById("inv-edit-title").textContent =
+      type === "green" ? "Edit Green Bean Inventory" : "Edit Shelf Stock";
+
+    const fields = Object.entries(data).map(([name, lbs]) => `
+      <div class="field-group" style="margin-bottom:0.7rem;">
+        <label>${name} (lbs)</label>
+        <input type="number" min="0" step="0.1" value="${lbs}" data-key="${name}" class="inv-edit-input" />
+      </div>`).join("");
+
+    // Add new item row
+    const originList = type === "green" ? ORIGINS : BLEND_NAMES;
+    document.getElementById("inv-edit-fields").innerHTML = fields + `
+      <hr style="border:none; border-top:1px solid rgba(0,0,0,0.08); margin:1rem 0;" />
+      <div class="field-group">
+        <label>Add New Item</label>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+          <select id="inv-add-name" style="flex:2; padding:0.55rem 0.7rem; border-radius:10px; border:1px solid rgba(0,0,0,0.14); font:inherit;">
+            ${originList.map(o => `<option>${o}</option>`).join("")}
+          </select>
+          <input id="inv-add-lbs" type="number" min="0" step="0.1" value="0"
+            style="flex:1; min-width:80px; padding:0.55rem 0.7rem; border-radius:10px; border:1px solid rgba(0,0,0,0.14); font:inherit;" />
+          <button class="btn btn-gray btn-sm" onclick="addInvItem()">Add</button>
+        </div>
+      </div>`;
+
+    document.getElementById("inv-edit-modal").style.display = "block";
+  }
+
+  function addInvItem() {
+    const name = document.getElementById("inv-add-name").value;
+    const lbs = Number(document.getElementById("inv-add-lbs").value) || 0;
+    if (!opsData.inventory[invEditType]) opsData.inventory[invEditType] = {};
+    if (opsData.inventory[invEditType][name] === undefined) {
+      opsData.inventory[invEditType][name] = lbs;
+    }
+    openInvEdit(invEditType); // re-render
+  }
+
+  function closeInvEdit() {
+    document.getElementById("inv-edit-modal").style.display = "none";
+  }
+
+  async function submitInvEdit() {
+    const inputs = document.querySelectorAll(".inv-edit-input");
+    inputs.forEach(input => {
+      opsData.inventory[invEditType][input.dataset.key] = Number(input.value) || 0;
+    });
+
+    try {
+      const res = await fetch("/.netlify/functions/update-inventory", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
+        body: JSON.stringify({ inventory: opsData.inventory })
+      });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+      closeInvEdit();
+      renderInventory();
+    } catch (e) { alert("Error saving inventory: " + e.message); }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  BLENDS
+  // ═══════════════════════════════════════════════════════════
+  let blendEditorState = {};
+
+  function renderBlends() {
+    blendEditorState = JSON.parse(JSON.stringify(opsData.blends));
+    renderBlendEditor();
+  }
+
+  function renderBlendEditor() {
+    const container = document.getElementById("blends-root");
+    container.innerHTML = Object.entries(blendEditorState).map(([name, formula], idx) => {
+      const total = Object.values(formula).reduce((s, v) => s + Number(v), 0).toFixed(1);
+      const isOk = Math.abs(Number(total) - 100) < 0.5;
+      const formulaRows = Object.entries(formula).map(([origin, pct], ri) => `
+        <div class="blend-formula-row" data-blend="${name}" data-row="${ri}">
+          <select class="blend-origin-select" data-blend="${name}" data-row="${ri}" onchange="updateBlendOrigin('${name}', ${ri}, this.value)">
+            ${ORIGINS.map(o => `<option${o === origin ? " selected" : ""}>${o}</option>`).join("")}
+          </select>
+          <input type="number" min="0" max="100" step="0.1" value="${pct}"
+            class="blend-pct-input"
+            oninput="updateBlendPct('${name}', ${ri}, this.value)"
+            style="padding:0.55rem 0.7rem; border-radius:10px; border:1px solid rgba(0,0,0,0.14); font:inherit; width:80px;" />
+          <span style="font-size:0.85rem;">%</span>
+          <button class="btn btn-sm btn-gray" onclick="removeBlendRow('${name}', ${ri})">✕</button>
+        </div>`).join("");
+
+      return `
+        <div class="dash-card" id="blend-card-${idx}">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
+            <input value="${name}" onchange="renameBlend('${name}', this.value)"
+              style="font-size:1rem; font-weight:800; border:none; background:transparent; border-bottom:2px solid rgba(0,0,0,0.15); padding:0.2rem 0.35rem; font:inherit; font-weight:800;" />
+            <button class="btn btn-sm btn-red" onclick="deleteBlend('${name}')">Delete Blend</button>
+          </div>
+          ${formulaRows}
+          <div class="pct-total ${isOk ? 'pct-ok' : 'pct-bad'}">Total: ${total}% ${isOk ? '✓' : '— must equal 100%'}</div>
+          <button class="btn btn-sm btn-gray" onclick="addBlendRow('${name}')" style="margin-top:0.5rem;">+ Add Origin</button>
+        </div>`;
+    }).join("");
+  }
+
+  function updateBlendOrigin(blend, row, newOrigin) {
+    const formula = blendEditorState[blend];
+    const entries = Object.entries(formula);
+    const [, pct] = entries[row];
+    const newEntries = entries.map(([k, v], i) => i === row ? [newOrigin, v] : [k, v]);
+    blendEditorState[blend] = Object.fromEntries(newEntries);
+  }
+
+  function updateBlendPct(blend, row, val) {
+    const formula = blendEditorState[blend];
+    const entries = Object.entries(formula);
+    entries[row][1] = Number(val) || 0;
+    blendEditorState[blend] = Object.fromEntries(entries);
+    // Update total display
+    const total = Object.values(blendEditorState[blend]).reduce((s, v) => s + Number(v), 0).toFixed(1);
+    const isOk = Math.abs(Number(total) - 100) < 0.5;
+    const card = document.getElementById(`blend-card-${Object.keys(blendEditorState).indexOf(blend)}`);
+    if (card) {
+      const totalEl = card.querySelector(".pct-total");
+      if (totalEl) {
+        totalEl.className = `pct-total ${isOk ? 'pct-ok' : 'pct-bad'}`;
+        totalEl.textContent = `Total: ${total}% ${isOk ? '✓' : '— must equal 100%'}`;
+      }
+    }
+  }
+
+  function addBlendRow(blend) {
+    blendEditorState[blend]["New Origin"] = 0;
+    renderBlendEditor();
+  }
+
+  function removeBlendRow(blend, row) {
+    const entries = Object.entries(blendEditorState[blend]);
+    entries.splice(row, 1);
+    blendEditorState[blend] = Object.fromEntries(entries);
+    renderBlendEditor();
+  }
+
+  function renameBlend(oldName, newName) {
+    if (!newName || newName === oldName) return;
+    const entries = Object.entries(blendEditorState);
+    const idx = entries.findIndex(([k]) => k === oldName);
+    if (idx < 0) return;
+    entries[idx][0] = newName;
+    blendEditorState = Object.fromEntries(entries);
+  }
+
+  function deleteBlend(name) {
+    if (!confirm(`Delete blend "${name}"?`)) return;
+    delete blendEditorState[name];
+    renderBlendEditor();
+  }
+
+  function addBlend() {
+    blendEditorState["New Blend"] = { "Brazil": 100 };
+    renderBlendEditor();
+  }
+
+  async function saveAllBlends() {
+    try {
+      const res = await fetch("/.netlify/functions/save-blends", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
+        body: JSON.stringify({ blends: blendEditorState })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      opsData.blends = JSON.parse(JSON.stringify(blendEditorState));
+      populateRoastBlendSelect();
+      const saved = document.getElementById("blends-saved");
+      saved.style.display = "inline";
+      setTimeout(() => { saved.style.display = "none"; }, 2000);
+    } catch (e) { alert("Error saving blends: " + e.message); }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  ROAST LOG
+  // ═══════════════════════════════════════════════════════════
+  function populateRoastBlendSelect() {
+    const sel = document.getElementById("roast-blend");
+    const blends = Object.keys(opsData.blends);
+    sel.innerHTML = blends.map(b => `<option>${b}</option>`).join("");
+    updateRoastPreview();
+  }
+
+  function updateRoastPreview() {
+    const blend = document.getElementById("roast-blend")?.value;
+    const lbs = Number(document.getElementById("roast-lbs")?.value) || 0;
+    const preview = document.getElementById("roast-green-preview");
+    if (!blend || !lbs || !opsData.blends[blend]) {
+      if (preview) preview.textContent = "";
+      return;
+    }
+    const formula = opsData.blends[blend];
+    const lines = Object.entries(formula)
+      .map(([origin, pct]) => `${origin}: ${((pct / 100) * lbs).toFixed(2)} lbs`)
+      .join(" · ");
+    if (preview) preview.textContent = `Green bean usage: ${lines}`;
+  }
+
+  document.getElementById("roast-blend").addEventListener("change", updateRoastPreview);
+  document.getElementById("roast-lbs").addEventListener("input", updateRoastPreview);
+  document.getElementById("roast-type").addEventListener("change", () => {
+    const isOrder = document.getElementById("roast-type").value === "order";
+    document.getElementById("order-id-field").style.display = isOrder ? "block" : "none";
+  });
+
+  // Set today's date
+  document.getElementById("roast-date").value = new Date().toISOString().split("T")[0];
+
+  async function submitRoast() {
+    const blend = document.getElementById("roast-blend").value;
+    const lbs = Number(document.getElementById("roast-lbs").value);
+    const date = document.getElementById("roast-date").value;
+    const roastType = document.getElementById("roast-type").value;
+    const orderId = document.getElementById("roast-order-id").value.trim();
+    const notes = document.getElementById("roast-notes").value.trim();
+
+    if (!blend || !lbs || lbs <= 0) { alert("Please enter a blend and amount."); return; }
+
+    try {
+      const res = await fetch("/.netlify/functions/log-roast", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
+        body: JSON.stringify({ blend, lbsRoasted: lbs, date, roastType, orderId, notes })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      opsData.inventory = data.inventory;
+      opsData.roastLog = [data.session, ...opsData.roastLog];
+
+      renderInventory();
+      renderRoastLog();
+
+      document.getElementById("roast-lbs").value = "";
+      document.getElementById("roast-notes").value = "";
+      document.getElementById("roast-green-preview").textContent = "";
+
+      alert(`Roast logged. ${roastType === "shelf" ? "Shelf stock updated." : "Green beans deducted."}`);
+    } catch (e) { alert("Error logging roast: " + e.message); }
+  }
+
+  function renderRoastLog() {
+    const container = document.getElementById("roast-log-list");
+    const log = opsData.roastLog || [];
+    if (!log.length) {
+      container.innerHTML = `<div class="empty-state">No roast sessions logged yet.</div>`;
+      return;
+    }
+    container.innerHTML = `
+      <div class="log-row" style="font-weight:800; opacity:0.6; font-size:0.78rem; text-transform:uppercase;">
+        <span>Date</span><span>Blend</span><span>Lbs</span><span>Type</span><span>Notes</span>
+      </div>` +
+      log.map(s => {
+        const greenLines = Object.entries(s.greenUsed || {}).map(([k, v]) => `${k}: ${v}`).join(", ");
+        return `
+          <div class="log-row">
+            <span>${s.date || "—"}</span>
+            <span><strong>${s.blend}</strong><br><small style="opacity:0.6">${greenLines}</small></span>
+            <span>${s.lbsRoasted} lbs</span>
+            <span><span class="roast-type-chip ${s.roastType === 'shelf' ? 'chip-shelf' : 'chip-order'}">${s.roastType}</span></span>
+            <span style="font-size:0.8rem; opacity:0.65;">${s.notes || "—"}</span>
+          </div>`;
+      }).join("");
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  ORDERS
+  // ═══════════════════════════════════════════════════════════
+  function setOrderView(view) {
+    currentOrderView = view;
+    ["active", "review", "completed", "archived"].forEach(v => {
+      document.getElementById(`tab-${v}`).classList.toggle("active", v === view);
+    });
+    renderOrders();
+  }
+
+  async function loadOrders() {
+    try {
+      const res = await fetch("/.netlify/functions/list-orders", {
+        headers: { "x-admin-key": adminKey }
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error || "Failed to load orders"); return; }
+      allOrders = data.orders || [];
+      renderOrders();
+    } catch (e) { console.error("loadOrders", e); }
+  }
+
+  function normalizeDashboardStatus(order) {
+    if (!order.dashboardStatus) {
+      order.dashboardStatus = order.archived ? "archived" : "active";
+    }
+    return order.dashboardStatus;
+  }
+
+  function renderOrders() {
+    const root = document.getElementById("orders-root");
+    const filtered = allOrders.filter(o => normalizeDashboardStatus(o) === currentOrderView);
+
+    if (!filtered.length) {
+      root.innerHTML = `<div class="dash-card"><div class="empty-state">No ${currentOrderView} orders.</div></div>`;
+      return;
+    }
+
+    root.innerHTML = filtered.map(order => `
+      <div class="dash-card order-card">
+        <div class="order-top">
+          <div>
+            <div class="order-title">${order.customer?.name || "Order"}</div>
+            <div class="order-subtitle">
+              ${order.customer?.email || "No email"} · ${new Date(order.createdAt).toLocaleDateString()}
+              ${order.orderType ? `· ${order.orderType}` : ""}
+              ${order.source ? `· ${order.source}` : ""}
+            </div>
+            <div class="order-id">${order.id}</div>
+            <span class="status-chip">${(order.dashboardStatus || "active").toUpperCase()}</span>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:1.2rem; font-weight:900;">$${((order.amountTotal || 0) / 100).toFixed(2)}</div>
+            <div style="font-size:0.78rem; opacity:0.6;">${new Date(order.createdAt).toLocaleString()}</div>
+          </div>
         </div>
 
         <div class="order-grid">
           <div class="order-box">
-            <strong>Customer</strong>
-            <div style="margin-top:0.75rem; display:grid; gap:0.75rem;">
-              <input id="create-customer-name" placeholder="Customer name" />
-              <input id="create-customer-email" placeholder="Customer email" />
-            </div>
+            <strong>Items</strong>
+            <ul class="items-list">
+              ${(order.items || []).map(i => `<li>${i.name} × ${i.quantity}</li>`).join("")}
+            </ul>
           </div>
-
           <div class="order-box">
-            <strong>Order Type</strong>
-            <div style="margin-top:0.75rem; display:grid; gap:0.75rem;">
-              <select id="create-order-type">
-                <option value="Retail">Retail</option>
-                <option value="Wholesale">Wholesale</option>
-              </select>
-
-              <select id="create-payment-method">
-                <option value="cash">Cash</option>
-                <option value="invoice">Invoice</option>
-                <option value="stripe">Stripe</option>
-                <option value="check">Check</option>
-              </select>
-
-              <select id="create-payment-status">
-                <option value="paid">Paid</option>
-                <option value="unpaid">Unpaid</option>
-                <option value="partial">Partial</option>
-              </select>
-            </div>
+            <strong>Roast Needed</strong>
+            <ul class="roast-list">
+              ${(order.roastNeeded || []).map(i => `<li>${i.name}: ${i.quantity}</li>`).join("")}
+            </ul>
           </div>
-
           <div class="order-box">
-            <strong>Item</strong>
-            <div style="margin-top:0.75rem; display:grid; gap:0.75rem;">
-              <select id="create-item-name">
-                <option value="Brazil">Brazil</option>
-                <option value="Guatemala">Guatemala</option>
-                <option value="Ethiopia">Ethiopia</option>
-                <option value="Range Line Roast">Range Line Roast</option>
-                <option value="Stillwater Decaf">Stillwater Decaf</option>
-                <option value="Full Power Dark">Full Power Dark</option>
-              </select>
-
-              <input id="create-item-quantity" type="number" min="1" value="1" placeholder="Quantity" />
-              <input id="create-item-price" type="number" min="0" step="1" value="1900" placeholder="Unit price in cents" />
-            </div>
+            <strong>Ship To</strong>
+            <div>${order.shippingAddress?.line1 || ""}</div>
+            <div>${order.shippingAddress?.line2 || ""}</div>
+            <div>${[order.shippingAddress?.city, order.shippingAddress?.state, order.shippingAddress?.postal_code].filter(Boolean).join(", ")}</div>
           </div>
-
           <div class="order-box">
-            <strong>Notes</strong>
-            <div style="margin-top:0.75rem; display:grid; gap:0.75rem;">
-              <input id="create-order-notes" placeholder="Notes" />
-            </div>
+            <strong>Status</strong>
+            <div>Payment: ${order.paymentStatus || "—"}</div>
+            <div>Fulfillment: ${order.fulfillmentStatus || "—"}</div>
+            <div>Shipping: ${order.shippingStatus || "—"}</div>
+            <div>Tracking: ${order.trackingNumber || "—"}</div>
           </div>
         </div>
 
-        <div style="margin-top:1rem; display:flex; gap:0.75rem; flex-wrap:wrap;">
-          <button
-            onclick="submitCreateOrder()"
-            style="background:var(--gold); color:#1c1406; font-weight:800; border:none; border-radius:12px; padding:0.8rem 1rem; cursor:pointer;"
-          >
-            Save Order
-          </button>
-          <button
-            onclick="closeCreateOrder()"
-            style="background:#111; color:#fff; font-weight:800; border:none; border-radius:12px; padding:0.8rem 1rem; cursor:pointer;"
-          >
-            Cancel
-          </button>
+        <div class="order-controls">
+          <select id="fulfillment-${order.id}">
+            ${["Needs Roast","Roasted","Packed","Shipped","Delivered","DO NOT FULFILL"].map(s =>
+              `<option${order.fulfillmentStatus === s ? " selected" : ""}>${s}</option>`
+            ).join("")}
+          </select>
+          <select id="shipping-${order.id}">
+            ${["Unfulfilled","Label Created","Shipped","Delivered"].map(s =>
+              `<option${order.shippingStatus === s ? " selected" : ""}>${s}</option>`
+            ).join("")}
+          </select>
+          <input id="tracking-${order.id}" placeholder="Tracking #" value="${order.trackingNumber || ""}" style="width:130px;" />
+          <input id="notes-${order.id}" placeholder="Notes" value="${order.notes || ""}" style="flex:1; min-width:120px;" />
+          <button class="btn btn-gold btn-sm" onclick="saveOrder('${order.id}')">Save</button>
+          <button class="btn btn-gray btn-sm" onclick="setOrderStatus('${order.id}','review')">Review</button>
+          <button class="btn btn-gray btn-sm" onclick="setOrderStatus('${order.id}','completed')">Complete</button>
+          <button class="btn btn-gray btn-sm" onclick="setOrderStatus('${order.id}','active')">Activate</button>
+          <button class="btn btn-red btn-sm" onclick="setOrderStatus('${order.id}','archived')">Archive</button>
         </div>
-      </div>
-    </div>
-  </main>
+      </div>`).join("");
+  }
 
-  <script>
-    const adminKey = prompt("Enter dashboard key:");
-    let currentView = "active";
-
-    function normalizeDashboardStatus(order) {
-      if (!order.dashboardStatus) {
-        order.dashboardStatus = order.archived ? "archived" : "active";
-      }
-      return order.dashboardStatus;
-    }
-
-    function updateTabStyles() {
-      ["active", "review", "completed", "archived"].forEach((view) => {
-        const tab = document.getElementById(`tab-${view}`);
-        if (!tab) return;
-        tab.classList.toggle("active", currentView === view);
+  async function saveOrder(orderId) {
+    try {
+      const res = await fetch("/.netlify/functions/update-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
+        body: JSON.stringify({
+          orderId,
+          fulfillmentStatus: document.getElementById(`fulfillment-${orderId}`)?.value || "",
+          shippingStatus: document.getElementById(`shipping-${orderId}`)?.value || "",
+          trackingNumber: document.getElementById(`tracking-${orderId}`)?.value || "",
+          notes: document.getElementById(`notes-${orderId}`)?.value || ""
+        })
       });
-    }
-
-    function setView(view) {
-      currentView = view;
-      updateTabStyles();
-      loadOrders();
-    }
-
-    async function loadOrders() {
-      const res = await fetch("/.netlify/functions/list-orders", {
-        headers: {
-          "x-admin-key": adminKey
-        }
-      });
-
       const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to save");
+      await loadOrders();
+    } catch (e) { alert(e.message); }
+  }
 
-      if (!res.ok) {
-        alert(data.error || "Failed to load orders");
-        return;
-      }
-
-      renderOrders(data.orders || []);
-    }
-
-    function renderOrders(orders) {
-      const root = document.getElementById("orders-root");
-
-      const filtered = orders.filter((order) => {
-        const status = normalizeDashboardStatus(order);
-        return status === currentView;
+  async function setOrderStatus(orderId, status) {
+    try {
+      const res = await fetch("/.netlify/functions/update-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
+        body: JSON.stringify({ orderId, dashboardStatus: status })
       });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update");
+      await loadOrders();
+    } catch (e) { alert(e.message); }
+  }
 
-      if (!filtered.length) {
-        root.innerHTML = `<div class="dash-card"><p>No ${currentView} orders.</p></div>`;
-        return;
+  function openCreateOrder() {
+    document.getElementById("create-order-modal").style.display = "block";
+  }
+  function closeCreateOrder() {
+    document.getElementById("create-order-modal").style.display = "none";
+  }
+
+  async function submitCreateOrder() {
+    const customerName = document.getElementById("create-customer-name").value.trim();
+    const customerEmail = document.getElementById("create-customer-email").value.trim();
+    const orderType = document.getElementById("create-order-type").value;
+    const paymentMethod = document.getElementById("create-payment-method").value;
+    const paymentStatus = document.getElementById("create-payment-status").value;
+    const itemName = document.getElementById("create-item-name").value;
+    const itemQuantity = Number(document.getElementById("create-item-quantity").value || 0);
+    const itemPrice = Number(document.getElementById("create-item-price").value || 0);
+    const notes = document.getElementById("create-order-notes").value.trim();
+
+    if (!customerName) { alert("Customer name required."); return; }
+    if (!itemName || itemQuantity <= 0) { alert("Enter valid item details."); return; }
+
+    try {
+      const res = await fetch("/.netlify/functions/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
+        body: JSON.stringify({
+          customer: { name: customerName, email: customerEmail },
+          items: [{ name: itemName, quantity: itemQuantity, unit_amount: itemPrice }],
+          source: "Manual", orderType, paymentMethod, paymentStatus,
+          dashboardStatus: "active", notes
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to create");
+      closeCreateOrder();
+      await loadOrders();
+    } catch (e) { alert(e.message); }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  MARKETING
+  // ═══════════════════════════════════════════════════════════
+  function renderMarketing() {
+    if (!allOrders.length) { loadOrders().then(doRenderMarketing); return; }
+    doRenderMarketing();
+  }
+
+  function doRenderMarketing() {
+    const now = new Date();
+    const thisMonth = now.getFullYear() * 100 + (now.getMonth() + 1);
+
+    const monthOrders = allOrders.filter(o => {
+      const d = new Date(o.createdAt);
+      return d.getFullYear() * 100 + (d.getMonth() + 1) === thisMonth;
+    });
+
+    const revenue = monthOrders.reduce((s, o) => s + (o.amountTotal || 0), 0);
+    const uniqueEmails = new Set(allOrders.map(o => o.customer?.email).filter(Boolean));
+
+    document.getElementById("mkt-revenue").textContent = "$" + (revenue / 100).toFixed(2);
+    document.getElementById("mkt-orders").textContent = monthOrders.length;
+    document.getElementById("mkt-customers").textContent = uniqueEmails.size;
+
+    // Best sellers
+    const blendCounts = {};
+    allOrders.forEach(o => {
+      (o.items || []).forEach(i => {
+        blendCounts[i.name] = (blendCounts[i.name] || 0) + (i.quantity || 1);
+      });
+    });
+    const sorted = Object.entries(blendCounts).sort(([,a],[,b]) => b - a);
+    document.getElementById("mkt-bestsellers").innerHTML = sorted.length
+      ? sorted.map(([name, qty], i) => `
+          <div class="customer-row">
+            <span style="font-weight:700;">${i + 1}. ${name}</span>
+            <span>${qty} units sold</span>
+          </div>`).join("")
+      : `<div class="empty-state">No order data yet.</div>`;
+
+    // Customer list
+    const customerMap = {};
+    allOrders.forEach(o => {
+      const email = o.customer?.email || "unknown";
+      if (!customerMap[email]) {
+        customerMap[email] = { name: o.customer?.name || "—", email, orders: 0, total: 0 };
       }
-
-      root.innerHTML = filtered.map((order) => `
-        <div class="dash-card order-card">
-          <div class="order-top">
+      customerMap[email].orders++;
+      customerMap[email].total += o.amountTotal || 0;
+    });
+    const customers = Object.values(customerMap).sort((a, b) => b.total - a.total);
+    document.getElementById("mkt-customers-list").innerHTML = customers.length
+      ? customers.slice(0, 30).map(c => `
+          <div class="customer-row">
             <div>
-              <div class="order-title">${order.customer?.name || "Order"}</div>
-              <div class="order-subtitle">
-                ${order.customer?.email || "No email"} • ${new Date(order.createdAt).toLocaleDateString()}
-              </div>
-              <div class="order-id">${order.id}</div>
-              <div class="status-chip">${(order.dashboardStatus || "active").toUpperCase()}</div>
+              <div style="font-weight:700;">${c.name}</div>
+              <div style="font-size:0.78rem; opacity:0.6;">${c.email}</div>
             </div>
-            <div>
-              <div><strong>$${((order.amountTotal || 0) / 100).toFixed(2)}</strong></div>
-              <div>${new Date(order.createdAt).toLocaleString()}</div>
+            <div style="text-align:right;">
+              <div style="font-weight:700;">$${(c.total / 100).toFixed(2)}</div>
+              <div style="font-size:0.78rem; opacity:0.6;">${c.orders} order${c.orders !== 1 ? "s" : ""}</div>
             </div>
-          </div>
+          </div>`).join("")
+      : `<div class="empty-state">No customers yet.</div>`;
+  }
 
-          <div class="order-grid">
-            <div class="order-box">
-              <strong>Items</strong>
-              <ul class="items-list">
-                ${(order.items || []).map((item) => `<li>${item.name} × ${item.quantity}</li>`).join("")}
-              </ul>
-            </div>
-
-            <div class="order-box">
-              <strong>Roast Needed</strong>
-              <ul class="roast-list">
-                ${(order.roastNeeded || []).map((item) => `<li>${item.name}: ${item.quantity}</li>`).join("")}
-              </ul>
-            </div>
-
-            <div class="order-box">
-              <strong>Ship To</strong>
-              <div>${order.shippingAddress?.line1 || ""}</div>
-              <div>${order.shippingAddress?.line2 || ""}</div>
-              <div>${order.shippingAddress?.city || ""}, ${order.shippingAddress?.state || ""} ${order.shippingAddress?.postal_code || ""}</div>
-              <div>${order.shippingAddress?.country || ""}</div>
-            </div>
-
-            <div class="order-box">
-              <strong>Status</strong>
-              <div>Payment: ${order.paymentStatus || ""}</div>
-              <div>Fulfillment: ${order.fulfillmentStatus || ""}</div>
-              <div>Shipping: ${order.shippingStatus || ""}</div>
-              <div>Tracking: ${order.trackingNumber || "—"}</div>
-            </div>
-          </div>
-
-          <div class="dash-controls">
-            <select id="fulfillment-${order.id}">
-              <option value="Needs Roast" ${order.fulfillmentStatus === "Needs Roast" ? "selected" : ""}>Needs Roast</option>
-              <option value="Roasted" ${order.fulfillmentStatus === "Roasted" ? "selected" : ""}>Roasted</option>
-              <option value="Packed" ${order.fulfillmentStatus === "Packed" ? "selected" : ""}>Packed</option>
-              <option value="Shipped" ${order.fulfillmentStatus === "Shipped" ? "selected" : ""}>Shipped</option>
-              <option value="Delivered" ${order.fulfillmentStatus === "Delivered" ? "selected" : ""}>Delivered</option>
-              <option value="DO NOT FULFILL" ${order.fulfillmentStatus === "DO NOT FULFILL" ? "selected" : ""}>DO NOT FULFILL</option>
-            </select>
-
-            <select id="shipping-${order.id}">
-              <option value="Unfulfilled" ${order.shippingStatus === "Unfulfilled" ? "selected" : ""}>Unfulfilled</option>
-              <option value="Label Created" ${order.shippingStatus === "Label Created" ? "selected" : ""}>Label Created</option>
-              <option value="Shipped" ${order.shippingStatus === "Shipped" ? "selected" : ""}>Shipped</option>
-              <option value="Delivered" ${order.shippingStatus === "Delivered" ? "selected" : ""}>Delivered</option>
-            </select>
-
-            <input id="tracking-${order.id}" placeholder="Tracking number" value="${order.trackingNumber || ""}" />
-            <input id="notes-${order.id}" placeholder="Notes" value="${order.notes || ""}" />
-
-            <button onclick="saveOrder('${order.id}')">Save</button>
-            <button onclick="setOrderStatus('${order.id}', 'review')">Send to Review</button>
-            <button onclick="setOrderStatus('${order.id}', 'completed')">Complete</button>
-            <button onclick="setOrderStatus('${order.id}', 'active')">Activate</button>
-            <button onclick="setOrderStatus('${order.id}', 'archived')" class="danger-btn">Archive</button>
-          </div>
-        </div>
-      `).join("");
-    }
-
-    async function saveOrder(orderId) {
-      try {
-        const fulfillmentStatus =
-          document.getElementById(`fulfillment-${orderId}`)?.value || "";
-        const shippingStatus =
-          document.getElementById(`shipping-${orderId}`)?.value || "";
-        const trackingNumber =
-          document.getElementById(`tracking-${orderId}`)?.value || "";
-        const notes =
-          document.getElementById(`notes-${orderId}`)?.value || "";
-
-        const response = await fetch("/.netlify/functions/update-order", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-admin-key": adminKey
-          },
-          body: JSON.stringify({
-            orderId,
-            fulfillmentStatus,
-            shippingStatus,
-            trackingNumber,
-            notes
-          })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to save order");
-        }
-
-        alert(`Order ${orderId} updated successfully.`);
-        await loadOrders();
-      } catch (error) {
-        console.error("Save order error:", error);
-        alert(error.message || "Failed to save order");
-      }
-    }
-
-    async function setOrderStatus(orderId, status) {
-      try {
-        const response = await fetch("/.netlify/functions/update-order", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-admin-key": adminKey
-          },
-          body: JSON.stringify({
-            orderId,
-            dashboardStatus: status
-          })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to update status");
-        }
-
-        await loadOrders();
-      } catch (error) {
-        console.error("Status update error:", error);
-        alert(error.message || "Failed to update status");
-      }
-    }
-
-    async function archiveOrder(orderId) {
-      const confirmed = confirm(`Archive order ${orderId}?`);
-      if (!confirmed) return;
-
-      try {
-        const response = await fetch("/.netlify/functions/archive-order", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-admin-key": adminKey
-          },
-          body: JSON.stringify({ orderId })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to archive order");
-        }
-
-        alert(`Order ${orderId} archived successfully.`);
-        await loadOrders();
-      } catch (error) {
-        console.error("Archive order error:", error);
-        alert(error.message || "Failed to archive order");
-      }
-    }
-
-    function openCreateOrder() {
-      document.getElementById("create-order-modal").style.display = "block";
-    }
-
-    function closeCreateOrder() {
-      document.getElementById("create-order-modal").style.display = "none";
-    }
-
-    async function submitCreateOrder() {
-      try {
-        const customerName =
-          document.getElementById("create-customer-name")?.value.trim() || "";
-        const customerEmail =
-          document.getElementById("create-customer-email")?.value.trim() || "";
-        const orderType =
-          document.getElementById("create-order-type")?.value || "Retail";
-        const paymentMethod =
-          document.getElementById("create-payment-method")?.value || "cash";
-        const paymentStatus =
-          document.getElementById("create-payment-status")?.value || "paid";
-        const itemName =
-          document.getElementById("create-item-name")?.value || "";
-        const itemQuantity = Number(
-          document.getElementById("create-item-quantity")?.value || 0
-        );
-        const itemPrice = Number(
-          document.getElementById("create-item-price")?.value || 0
-        );
-        const notes =
-          document.getElementById("create-order-notes")?.value.trim() || "";
-
-        if (!customerName) {
-          alert("Customer name is required.");
-          return;
-        }
-
-        if (!itemName || itemQuantity <= 0 || itemPrice < 0) {
-          alert("Enter valid item details.");
-          return;
-        }
-
-        const response = await fetch("/.netlify/functions/create-order", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-admin-key": adminKey
-          },
-          body: JSON.stringify({
-            customer: {
-              name: customerName,
-              email: customerEmail
-            },
-            items: [
-              {
-                name: itemName,
-                quantity: itemQuantity,
-                unit_amount: itemPrice
-              }
-            ],
-            source: "Manual",
-            orderType,
-            paymentMethod,
-            paymentStatus,
-            dashboardStatus: "active",
-            notes
-          })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to create order");
-        }
-
-        alert("Order created successfully.");
-        closeCreateOrder();
-        await loadOrders();
-      } catch (error) {
-        console.error("Create order error:", error);
-        alert(error.message || "Failed to create order");
-      }
-    }
-
-    updateTabStyles();
+  // ═══════════════════════════════════════════════════════════
+  //  INIT
+  // ═══════════════════════════════════════════════════════════
+  function init() {
+    loadOpsData();
     loadOrders();
+  }
+
+  if (adminKey) init();
   </script>
 </body>
 </html>
-
