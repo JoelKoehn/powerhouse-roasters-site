@@ -576,6 +576,13 @@ h1, h2, h3{
   font-size: 0.96rem;
 }
 
+.coffee-price {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
 .coffee-card-footer {
   display: flex;
   justify-content: space-between;
