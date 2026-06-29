@@ -5,37 +5,43 @@ const PRODUCTS = {
     name: "Brazil",
     price: 1900,
     image: "images/brazil-bag.jpg",
-    page: "brazil.html"
+    page: "brazil.html",
+    roast: "Medium Roast"
   },
   "Guatemala": {
     name: "Guatemala",
     price: 1900,
     image: "images/guate-bag.jpg",
-    page: "guatemala.html"
+    page: "guatemala.html",
+    roast: "Medium Roast"
   },
   "Ethiopia": {
     name: "Ethiopia",
     price: 1900,
     image: "images/ethiopia-bag.jpg",
-    page: "ethiopia.html"
+    page: "ethiopia.html",
+    roast: "Light Roast"
   },
   "Range Line Roast": {
     name: "Range Line Roast",
     price: 1900,
     image: "images/rangeline-bag.jpg",
-    page: "rangeline.html"
+    page: "rangeline.html",
+    roast: "Medium Roast"
   },
   "Stillwater Decaf": {
     name: "Stillwater Decaf",
     price: 1900,
     image: "images/swater-bag.jpg",
-    page: "stillwaterdecaf.html"
+    page: "stillwaterdecaf.html",
+    roast: "Medium Roast"
   },
   "Full Power Dark": {
     name: "Full Power Dark",
     price: 1900,
     image: "images/fpdark-bag.jpg",
-    page: "fullpowerdark.html"
+    page: "fullpowerdark.html",
+    roast: "Medium-Dark Roast"
   }
 };
 
@@ -67,18 +73,20 @@ function addToCart(productName, qty = 1) {
       price: product.price,
       image: product.image,
       page: product.page,
+      roast: product.roast,
       quantity: qty
     });
   }
 
   saveCart(cart);
-  showCartToast(`${product.name} added to cart`);
+  openCartDrawer();
 }
 
 function removeFromCart(productName) {
   const cart = getCart().filter(item => item.name !== productName);
   saveCart(cart);
   renderCartPage();
+  renderCartDrawer();
 }
 
 function updateQuantity(productName, quantity) {
@@ -94,6 +102,21 @@ function updateQuantity(productName, quantity) {
   item.quantity = quantity;
   saveCart(cart);
   renderCartPage();
+  renderCartDrawer();
+}
+
+function drawerUpdateQty(productName, delta) {
+  const cart = getCart();
+  const item = cart.find(i => i.name === productName);
+  if (!item) return;
+  const newQty = item.quantity + delta;
+  if (newQty <= 0) {
+    removeFromCart(productName);
+  } else {
+    item.quantity = newQty;
+    saveCart(cart);
+    renderCartDrawer();
+  }
 }
 
 function getCartCount() {
@@ -117,48 +140,131 @@ function updateCartCount() {
   });
 }
 
-function showCartToast(message) {
-  let toast = document.getElementById("cart-toast");
+// ── Cart Drawer ──────────────────────────────────────────
 
-  if (!toast) {
-    toast = document.createElement("div");
-    toast.id = "cart-toast";
-    toast.style.position = "fixed";
-    toast.style.right = "20px";
-    toast.style.bottom = "20px";
-    toast.style.zIndex = "9999";
-    toast.style.background = "#151515";
-    toast.style.color = "#fff";
-    toast.style.padding = "0.85rem 1rem";
-    toast.style.borderRadius = "14px";
-    toast.style.boxShadow = "0 12px 28px rgba(0,0,0,0.18)";
-    toast.style.fontWeight = "700";
-    toast.style.opacity = "0";
-    toast.style.transform = "translateY(10px)";
-    toast.style.transition = "all 0.2s ease";
-    document.body.appendChild(toast);
+function injectCartDrawer() {
+  if (document.getElementById("cart-drawer")) return;
+
+  document.body.insertAdjacentHTML("beforeend", `
+    <div id="cart-drawer-overlay" class="cart-drawer-overlay" onclick="closeCartDrawer()"></div>
+    <aside id="cart-drawer" class="cart-drawer" aria-label="Shopping cart">
+      <div class="drawer-header">
+        <span class="drawer-title">Your Cart <span class="drawer-count-badge" id="drawer-count-badge"></span></span>
+        <button class="drawer-close" onclick="closeCartDrawer()" aria-label="Close cart">✕</button>
+      </div>
+      <div id="drawer-items" class="drawer-items"></div>
+      <div class="drawer-footer">
+        <div class="drawer-shipping-bar" id="drawer-shipping-bar"></div>
+        <div class="drawer-total-row">
+          <span>Subtotal</span>
+          <span id="drawer-total">$0.00</span>
+        </div>
+        <button class="drawer-checkout-btn" id="drawer-checkout-btn" onclick="checkoutCart()">
+          Proceed to Checkout
+        </button>
+        <button class="drawer-continue-btn" onclick="closeCartDrawer()">
+          Continue Shopping
+        </button>
+      </div>
+    </aside>
+  `);
+}
+
+function openCartDrawer() {
+  renderCartDrawer();
+  document.getElementById("cart-drawer")?.classList.add("open");
+  document.getElementById("cart-drawer-overlay")?.classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeCartDrawer() {
+  document.getElementById("cart-drawer")?.classList.remove("open");
+  document.getElementById("cart-drawer-overlay")?.classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+function renderCartDrawer() {
+  const itemsEl = document.getElementById("drawer-items");
+  const totalEl = document.getElementById("drawer-total");
+  const shippingEl = document.getElementById("drawer-shipping-bar");
+  const badgeEl = document.getElementById("drawer-count-badge");
+  const checkoutBtn = document.getElementById("drawer-checkout-btn");
+
+  if (!itemsEl) return;
+
+  const cart = getCart();
+  const subtotal = getCartSubtotal();
+  const count = getCartCount();
+  const freeShippingThreshold = 7500;
+
+  if (badgeEl) badgeEl.textContent = count;
+  if (totalEl) totalEl.textContent = formatMoney(subtotal);
+  if (checkoutBtn) checkoutBtn.disabled = cart.length === 0;
+
+  if (shippingEl) {
+    if (subtotal >= freeShippingThreshold) {
+      shippingEl.textContent = "🎉 You've qualified for free shipping!";
+    } else {
+      const remaining = freeShippingThreshold - subtotal;
+      shippingEl.textContent = `${formatMoney(remaining)} away from free shipping`;
+    }
   }
 
-  toast.textContent = message;
-  toast.style.opacity = "1";
-  toast.style.transform = "translateY(0)";
+  if (cart.length === 0) {
+    itemsEl.innerHTML = `<div class="drawer-empty">Your cart is empty.<br><br>Add some coffee to get started.</div>`;
+    return;
+  }
 
-  clearTimeout(window.__cartToastTimer);
-  window.__cartToastTimer = setTimeout(() => {
-    toast.style.opacity = "0";
-    toast.style.transform = "translateY(10px)";
-  }, 1900);
+  itemsEl.innerHTML = cart.map(item => {
+    const safeName = item.name.replace(/'/g, "\\'");
+    return `
+      <div class="drawer-item">
+        <a href="${item.page}">
+          <img src="${item.image}" alt="${item.name}" class="drawer-item-img">
+        </a>
+        <div>
+          <div class="drawer-item-name">${item.name}</div>
+          <div class="drawer-item-roast">${item.roast || ""}</div>
+          <div class="drawer-qty-row">
+            <button class="drawer-qty-btn" onclick="drawerUpdateQty('${safeName}', -1)">−</button>
+            <span class="drawer-qty-val">${item.quantity}</span>
+            <button class="drawer-qty-btn" onclick="drawerUpdateQty('${safeName}', 1)">+</button>
+          </div>
+          <button class="drawer-remove-btn" onclick="removeFromCart('${safeName}')">Remove</button>
+        </div>
+        <div class="drawer-item-total">${formatMoney(item.price * item.quantity)}</div>
+      </div>
+    `;
+  }).join("");
 }
 
-function bindAddToCartButtons() {
-  document.querySelectorAll(".add-to-cart").forEach(button => {
-    button.addEventListener("click", function (e) {
-      e.preventDefault();
-      const productName = this.dataset.product;
-      addToCart(productName, 1);
+async function checkoutCart() {
+  const cart = getCart();
+  if (!cart.length) return;
+
+  const btn = document.getElementById("drawer-checkout-btn");
+  if (btn) { btn.disabled = true; btn.textContent = "Redirecting..."; }
+
+  try {
+    const res = await fetch("/.netlify/functions/create-checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cart })
     });
-  });
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      alert("Checkout error. Please try again.");
+      if (btn) { btn.disabled = false; btn.textContent = "Proceed to Checkout"; }
+    }
+  } catch {
+    alert("Checkout error. Please try again.");
+    if (btn) { btn.disabled = false; btn.textContent = "Proceed to Checkout"; }
+  }
 }
+
+// ── Cart page ────────────────────────────────────────────
 
 function renderCartPage() {
   const cartItemsEl = document.getElementById("cart-items");
@@ -214,7 +320,7 @@ function renderCartPage() {
   subtotalEl.textContent = formatMoney(subtotal);
 
   if (subtotal >= freeShippingThreshold) {
-    shippingMsgEl.textContent = "You’ve qualified for free shipping in the contiguous U.S.";
+    shippingMsgEl.textContent = "You've qualified for free shipping in the contiguous U.S.";
   } else {
     const remaining = freeShippingThreshold - subtotal;
     shippingMsgEl.textContent = `${formatMoney(remaining)} away from free shipping`;
@@ -224,7 +330,18 @@ function renderCartPage() {
   checkoutBtn.classList.remove("is-disabled");
 }
 
+function bindAddToCartButtons() {
+  document.querySelectorAll(".add-to-cart").forEach(button => {
+    button.addEventListener("click", function (e) {
+      e.preventDefault();
+      const productName = this.dataset.product;
+      addToCart(productName, 1);
+    });
+  });
+}
+
 document.addEventListener("DOMContentLoaded", function () {
+  injectCartDrawer();
   updateCartCount();
   bindAddToCartButtons();
   renderCartPage();

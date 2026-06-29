@@ -129,6 +129,18 @@ exports.handler = async (event) => {
         `orders/${order.id}.json`,
         JSON.stringify(order, null, 2)
       );
+
+      // Store review request — check-review-requests scheduled function processes these 7+ days later
+      if (!isUnsupportedState && order.customer?.email) {
+        const reviewStore = getStore("review-requests");
+        await reviewStore.set(order.id, JSON.stringify({
+          orderId: order.id,
+          customerEmail: order.customer.email,
+          customerName: order.customer.name,
+          items: order.items,
+          createdAt: now
+        }));
+      }
     }
 
     return {

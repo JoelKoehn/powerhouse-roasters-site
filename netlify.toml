@@ -29,4 +29,7 @@ functions = "netlify/functions"
 
 [functions]
 
+  [functions.check-review-requests]
+    schedule = "@daily"
+
   [functions."*"]

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wholesale | Powerhouse Roasters</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="logo-area">
+        <img src="images/powerhouse-logo.png" alt="Powerhouse Roasters Logo" class="logo-img" />
+        <span class="site-title">POWERHOUSE ROASTERS</span>
+      </div>
+      <nav class="nav">
+        <a href="index.html#coffees">Coffees</a>
+        <a href="our-story.html">Our Story</a>
+        <a href="wholesale.html" aria-current="page">Wholesale</a>
+        <a href="index.html#contact">Contact</a>
+        <a href="tel:+13075550100" class="nav-phone">(307) 555-0100</a>
+        <a href="cart.html" class="cart-link">Cart <span class="cart-count">0</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <div class="wholesale-hero">
+    <div class="container">
+      <p class="eyebrow" style="color:rgba(200,162,77,0.9);margin-bottom:0.5rem;">WHOLESALE & SERVICE PARTNERS</p>
+      <h1>Coffee Built for Business</h1>
+      <p>Consistent, clean, small-batch roasted coffee for cafés, offices, and service environments that won't settle for average.</p>
+      <a href="#inquiry-form" class="btn btn-primary">Start a Conversation</a>
+    </div>
+  </div>
+
+  <!-- WHAT WE OFFER -->
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title">What We Offer</h2>
+      <p class="section-lead">Six distinct profiles. One standard: smooth, clean, and consistent in every cup.</p>
+
+      <div class="wh-grid">
+        <div class="wh-card">
+          <div class="wh-card-icon">☕</div>
+          <h3>Full Product Lineup</h3>
+          <p>Range Line Roast, Full Power Dark, Brazil, Guatemala, Ethiopia, and Stillwater Decaf — all available for wholesale.</p>
+        </div>
+        <div class="wh-card">
+          <div class="wh-card-icon">🏔</div>
+          <h3>Small-Batch Roasting</h3>
+          <p>Wyoming-roasted in controlled small batches so every delivery tastes the same as the last.</p>
+        </div>
+        <div class="wh-card">
+          <div class="wh-card-icon">⚙️</div>
+          <h3>Versatile Profiles</h3>
+          <p>Profiles built to perform across drip, espresso, pour-over, and cold brew applications.</p>
+        </div>
+        <div class="wh-card">
+          <div class="wh-card-icon">🤝</div>
+          <h3>Relationship-First</h3>
+          <p>We work directly with each partner — no middlemen, straightforward pricing, real communication.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING TIERS -->
+  <section class="section section-alt">
+    <div class="container">
+      <h2 class="section-title">Wholesale Pricing</h2>
+      <p class="section-lead">Volume pricing available for all partners. Contact us to confirm current rates and minimum order quantities.</p>
+
+      <table class="pricing-table">
+        <thead>
+          <tr>
+            <th>Tier</th>
+            <th>Monthly Volume</th>
+            <th>Price Per Bag</th>
+            <th>Turnaround</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Starter</td>
+            <td>6–24 bags/month</td>
+            <td class="pricing-highlight">Contact for pricing</td>
+            <td>5–7 business days</td>
+          </tr>
+          <tr>
+            <td>Growth</td>
+            <td>25–99 bags/month</td>
+            <td class="pricing-highlight">Contact for pricing</td>
+            <td>3–5 business days</td>
+          </tr>
+          <tr>
+            <td>Partner</td>
+            <td>100+ bags/month</td>
+            <td class="pricing-highlight">Contact for pricing</td>
+            <td>2–3 business days</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p style="margin-top:1rem;font-size:0.88rem;color:var(--muted);">
+        All orders are freshly roasted after placement. Minimum first order: 6 bags. Free shipping on orders over $200.
+      </p>
+    </div>
+  </section>
+
+  <!-- INQUIRY FORM -->
+  <section class="section" id="inquiry-form">
+    <div class="container" style="max-width:680px;">
+      <h2 class="section-title">Wholesale Inquiry</h2>
+      <p class="section-lead">Tell us about your business and we'll follow up within one business day.</p>
+
+      <form
+        name="wholesale-inquiry"
+        method="POST"
+        data-netlify="true"
+        class="wh-form"
+        netlify-honeypot="bot-field"
+      >
+        <input type="hidden" name="form-name" value="wholesale-inquiry" />
+        <p style="display:none;"><label>Don't fill this out: <input name="bot-field" /></label></p>
+
+        <div class="wh-form-grid">
+          <div>
+            <input type="text" name="name" placeholder="Your Name" required />
+          </div>
+          <div>
+            <input type="text" name="business" placeholder="Business Name" required />
+          </div>
+          <div>
+            <input type="email" name="email" placeholder="Email Address" required />
+          </div>
+          <div>
+            <input type="tel" name="phone" placeholder="Phone Number" />
+          </div>
+        </div>
+
+        <div style="margin-bottom:0.85rem;">
+          <select name="business-type" required style="width:100%;padding:0.75rem 0.9rem;border-radius:12px;border:1px solid rgba(0,0,0,0.16);font:inherit;background:rgba(255,255,255,0.8);">
+            <option value="" disabled selected>Business Type</option>
+            <option>Café / Coffee Shop</option>
+            <option>Restaurant</option>
+            <option>Hotel / Hospitality</option>
+            <option>Office / Corporate</option>
+            <option>Grocery / Retail</option>
+            <option>Food Service / Catering</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom:0.85rem;">
+          <select name="monthly-volume" style="width:100%;padding:0.75rem 0.9rem;border-radius:12px;border:1px solid rgba(0,0,0,0.16);font:inherit;background:rgba(255,255,255,0.8);">
+            <option value="" disabled selected>Estimated Monthly Volume</option>
+            <option>6–24 bags/month</option>
+            <option>25–99 bags/month</option>
+            <option>100+ bags/month</option>
+            <option>Not sure yet</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom:0.85rem;">
+          <textarea name="message" rows="5" placeholder="Tell us about your business and what you're looking for…"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Send Inquiry</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section section-alt">
+    <div class="container" style="max-width:720px;">
+      <h2 class="section-title">Frequently Asked Questions</h2>
+
+      <div class="wh-faq">
+        <div class="wh-faq-item">
+          <div class="wh-faq-q">How fresh is the coffee when it ships?</div>
+          <div class="wh-faq-a">We roast to order — every wholesale batch is roasted after your order is placed and ships within the turnaround window for your tier. You're never getting old stock.</div>
+        </div>
+        <div class="wh-faq-item">
+          <div class="wh-faq-q">Can I order multiple blends?</div>
+          <div class="wh-faq-a">Yes. Mixed orders across any of our six profiles count toward your total volume tier. You can split an order across as many blends as you need.</div>
+        </div>
+        <div class="wh-faq-item">
+          <div class="wh-faq-q">Do you offer custom labeling?</div>
+          <div class="wh-faq-a">We're exploring private label options for high-volume partners. Reach out and let us know what you're looking for — we'll tell you what's possible.</div>
+        </div>
+        <div class="wh-faq-item">
+          <div class="wh-faq-q">What are your payment terms?</div>
+          <div class="wh-faq-a">New partners pay upfront. After three orders, we can discuss net-15 terms. We keep it simple and direct — no hidden fees or confusing contracts.</div>
+        </div>
+        <div class="wh-faq-item">
+          <div class="wh-faq-q">Do you ship outside the contiguous U.S.?</div>
+          <div class="wh-faq-a">Currently we ship to all 48 contiguous states. Alaska, Hawaii, and international shipping are not available at this time.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CLOSING CTA -->
+  <section class="section">
+    <div class="container">
+      <div class="wh-cta-box">
+        <h2>Ready to Bring Powerhouse to Your Business?</h2>
+        <p>Fill out the inquiry form above or reach out directly. We'll get back to you within one business day.</p>
+        <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+          <a href="#inquiry-form" class="btn btn-primary">Submit an Inquiry</a>
+          <a href="mailto:info@powerhouseroasters.com" class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,0.3);">info@powerhouseroasters.com</a>
+        </div>
+        <p style="margin-top:1rem;opacity:0.65;font-size:0.88rem;">Or call us at <a href="tel:+13075550100" style="color:var(--gold);">(307) 555-0100</a></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>&copy; <span id="year"></span> Powerhouse Roasters. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+  <script src="cart.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
