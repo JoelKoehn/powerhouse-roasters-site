@@ -203,7 +203,7 @@ function renderCartDrawer() {
 
   if (shippingEl) {
     if (subtotal >= freeShippingThreshold) {
-      shippingEl.textContent = "🎉 You've qualified for free shipping!";
+      shippingEl.textContent = "You've qualified for free shipping!";
     } else {
       const remaining = freeShippingThreshold - subtotal;
       shippingEl.textContent = `${formatMoney(remaining)} away from free shipping`;

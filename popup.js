@@ -42,7 +42,7 @@
           <button type="submit" class="popup-submit">Claim 10% Off</button>
         </form>
         <p class="popup-disclaimer">No spam, ever. Unsubscribe anytime.</p>
-        <p class="popup-success" id="popup-success">✓ Check your inbox for your discount code!</p>
+        <p class="popup-success" id="popup-success">Check your inbox for your discount code!</p>
       </div>
     `;
 
