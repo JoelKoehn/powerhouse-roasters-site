@@ -10,6 +10,11 @@ const DEFAULT_BLENDS = {
   "Stillwater Decaf": { "Decaf Colombia": 100 }
 };
 
+const DEFAULT_ORIGINS = [
+  "Brazil", "Guatemala", "Ethiopia", "Decaf Colombia", "Colombia",
+  "Kenya", "Honduras", "Peru", "Burundi"
+];
+
 const DEFAULT_INVENTORY = {
   green: {
     "Brazil": 0,
@@ -35,20 +40,22 @@ exports.handler = async (event) => {
     connectLambda(event);
     const store = getStore("ops");
 
-    const [blendsRaw, inventoryRaw, roastLogRaw] = await Promise.all([
+    const [blendsRaw, inventoryRaw, roastLogRaw, originsRaw] = await Promise.all([
       store.get("blends").catch(() => null),
       store.get("inventory").catch(() => null),
-      store.get("roast-log").catch(() => null)
+      store.get("roast-log").catch(() => null),
+      store.get("origins").catch(() => null)
     ]);
 
     const blends = blendsRaw ? JSON.parse(blendsRaw) : DEFAULT_BLENDS;
     const inventory = inventoryRaw ? JSON.parse(inventoryRaw) : DEFAULT_INVENTORY;
     const roastLog = roastLogRaw ? JSON.parse(roastLogRaw) : [];
+    const origins = originsRaw ? JSON.parse(originsRaw) : DEFAULT_ORIGINS;
 
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ blends, inventory, roastLog })
+      body: JSON.stringify({ blends, inventory, roastLog, origins })
     };
   } catch (error) {
     console.error("get-ops-data error:", error);

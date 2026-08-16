@@ -472,6 +472,18 @@
           <span id="threshold-saved" style="font-size:0.85rem; color:#16a34a; display:none;">Saved ✓</span>
         </div>
       </div>
+
+      <div class="dash-card">
+        <h2>Manage Origins</h2>
+        <p style="font-size:0.88rem; opacity:0.65; margin:0 0 0.9rem;">The list of green coffee origins available across Inventory and Blend formulas. Removing one here just stops it from being offered for new entries — it won't touch inventory or blends that already use it.</p>
+        <div id="origins-list" style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.9rem;"></div>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+          <input id="new-origin-input" placeholder="e.g. Sumatra"
+            style="flex:1; min-width:160px; padding:0.55rem 0.75rem; border-radius:10px; border:1px solid rgba(0,0,0,0.14); font:inherit;"
+            onkeydown="if(event.key==='Enter') addOrigin()" />
+          <button class="btn btn-gold btn-sm" onclick="addOrigin()">+ Add Origin</button>
+        </div>
+      </div>
     </section>
 
     <!-- ══════════════════════════════════════════════ BLENDS ══════ -->
@@ -740,7 +752,7 @@
     "Full Power Dark", "Range Line Roast", "Brazil",
     "Guatemala", "Ethiopia", "Stillwater Decaf"
   ];
-  const ORIGINS = [
+  let ORIGINS = [
     "Brazil", "Guatemala", "Ethiopia", "Decaf Colombia", "Colombia",
     "Kenya", "Honduras", "Peru", "Burundi"
   ];
@@ -785,10 +797,15 @@
       return;
     }
 
+    if (Array.isArray(opsData.origins) && opsData.origins.length) {
+      ORIGINS = opsData.origins;
+    }
+
     renderInventory();
     renderBlends();
     populateRoastBlendSelect();
     renderRoastLog();
+    renderOriginsManager();
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -883,9 +900,12 @@
       type === "green" ? "Edit Green Bean Inventory" : "Edit Shelf Stock";
 
     const fields = Object.entries(data).map(([name, lbs]) => `
-      <div class="field-group" style="margin-bottom:0.7rem;">
-        <label>${name} (lbs)</label>
-        <input type="number" min="0" step="0.1" value="${lbs}" data-key="${name}" class="inv-edit-input" />
+      <div class="field-group" style="margin-bottom:0.7rem; display:flex; align-items:flex-end; gap:0.5rem;">
+        <div style="flex:1;">
+          <label>${name} (lbs)</label>
+          <input type="number" min="0" step="0.1" value="${lbs}" data-key="${name}" class="inv-edit-input" />
+        </div>
+        <button class="btn btn-sm btn-red" type="button" onclick="removeInvItem('${type}', '${name.replace(/'/g, "\\'")}')">✕</button>
       </div>`).join("");
 
     // Add new item row
@@ -905,6 +925,13 @@
       </div>`;
 
     document.getElementById("inv-edit-modal").style.display = "block";
+  }
+
+  function removeInvItem(type, name) {
+    const label = type === "green" ? "green bean" : "shelf stock";
+    if (!confirm(`Remove "${name}" from ${label} inventory? This can't be undone once you save.`)) return;
+    delete opsData.inventory[type][name];
+    openInvEdit(type);
   }
 
   function addInvItem() {
@@ -937,6 +964,54 @@
       closeInvEdit();
       renderInventory();
     } catch (e) { alert("Error saving inventory: " + e.message); }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  ORIGINS — persisted master list feeding Inventory + Blends
+  // ═══════════════════════════════════════════════════════════
+  function renderOriginsManager() {
+    const root = document.getElementById("origins-list");
+    if (!root) return;
+    root.innerHTML = ORIGINS.map(name => `
+      <span style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.4rem 0.5rem 0.4rem 0.8rem; background:rgba(0,0,0,0.05); border-radius:999px; font-size:0.85rem; font-weight:700;">
+        ${name}
+        <button class="btn btn-sm btn-gray" style="padding:0.15rem 0.5rem; font-size:0.75rem;" onclick="removeOrigin('${name.replace(/'/g, "\\'")}')">✕</button>
+      </span>`).join("");
+  }
+
+  async function saveOrigins() {
+    try {
+      const res = await fetch("/.netlify/functions/save-origins", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
+        body: JSON.stringify({ origins: ORIGINS })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+    } catch (e) { alert("Error saving origins: " + e.message); }
+  }
+
+  async function addOrigin() {
+    const input = document.getElementById("new-origin-input");
+    const name = input.value.trim();
+    if (!name) return;
+    if (ORIGINS.some(o => o.toLowerCase() === name.toLowerCase())) {
+      alert(`"${name}" is already in the list.`);
+      return;
+    }
+    ORIGINS = [...ORIGINS, name];
+    input.value = "";
+    renderOriginsManager();
+    if (Object.keys(blendEditorState).length) renderBlendEditor();
+    await saveOrigins();
+  }
+
+  async function removeOrigin(name) {
+    if (!confirm(`Remove "${name}" from the origins list? It won't touch inventory or blends that already use it — just stops it being offered for new entries.`)) return;
+    ORIGINS = ORIGINS.filter(o => o !== name);
+    renderOriginsManager();
+    if (Object.keys(blendEditorState).length) renderBlendEditor();
+    await saveOrigins();
   }
 
   // ═══════════════════════════════════════════════════════════
