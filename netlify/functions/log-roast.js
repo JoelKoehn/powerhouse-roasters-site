@@ -18,6 +18,9 @@ exports.handler = async (event) => {
     if (roastType === "shelf" && (!bagsFilled || bagsFilled <= 0)) {
       return { statusCode: 400, body: JSON.stringify({ error: "bagsFilled required for shelf roasts" }) };
     }
+    if (roastType === "order" && !orderId) {
+      return { statusCode: 400, body: JSON.stringify({ error: "orderId required for order roasts" }) };
+    }
     if (!["shelf", "order"].includes(roastType)) {
       return { statusCode: 400, body: JSON.stringify({ error: "roastType must be shelf or order" }) };
     }
@@ -88,10 +91,45 @@ exports.handler = async (event) => {
       store.set("roast-log", JSON.stringify(roastLog, null, 2))
     ]);
 
+    let updatedOrder = null;
+    let orderWarning = null;
+
+    if (roastType === "order" && orderId) {
+      const ordersStore = getStore("orders");
+      const orderKey = `orders/${orderId}.json`;
+      const orderRaw = await ordersStore.get(orderKey).catch(() => null);
+
+      if (!orderRaw) {
+        orderWarning = `Roast logged, but order "${orderId}" was not found — it was not updated.`;
+      } else {
+        const order = JSON.parse(orderRaw);
+        const line = (order.roastNeeded || []).find((item) => item.name === blend);
+
+        if (!line) {
+          orderWarning = `Roast logged, but order "${orderId}" has no "${blend}" line — it was not updated.`;
+        } else {
+          const produced = Number(bagsFilled) || 0;
+          line.roasted = Math.min(line.quantity, (line.roasted || 0) + produced);
+
+          const allFulfilled = (order.roastNeeded || []).every(
+            (item) => (item.roasted || 0) >= item.quantity
+          );
+
+          if (allFulfilled && order.fulfillmentStatus === "Needs Roast") {
+            order.fulfillmentStatus = "Roasted";
+          }
+
+          order.updatedAt = new Date().toISOString();
+          await ordersStore.set(orderKey, JSON.stringify(order, null, 2));
+          updatedOrder = order;
+        }
+      }
+    }
+
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ok: true, session, inventory })
+      body: JSON.stringify({ ok: true, session, inventory, updatedOrder, orderWarning })
     };
   } catch (error) {
     console.error("log-roast error:", error);

@@ -15,7 +15,8 @@ function summarizeRoastNeeded(items) {
 
   return Object.entries(map).map(([name, quantity]) => ({
     name,
-    quantity
+    quantity,
+    roasted: 0
   }));
 }
 

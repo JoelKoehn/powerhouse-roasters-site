@@ -4,3 +4,6 @@ stripe-output.txt
 checkout-output.txt
 blobs-output.tx
 functions-output.txt
+
+# Local Netlify folder
+.netlify

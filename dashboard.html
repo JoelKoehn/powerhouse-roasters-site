@@ -350,11 +350,11 @@
 
     <!-- Top nav -->
     <nav class="ops-nav">
-      <button class="ops-tab active" onclick="showSection('orders')">Orders</button>
-      <button class="ops-tab" onclick="showSection('roast')">Roast Log</button>
-      <button class="ops-tab" onclick="showSection('inventory')">Inventory</button>
-      <button class="ops-tab" onclick="showSection('blends')">Blends</button>
-      <button class="ops-tab" onclick="showSection('marketing')">Marketing</button>
+      <button class="ops-tab active" onclick="showSection('orders', this)">Orders</button>
+      <button class="ops-tab" onclick="showSection('roast', this)">Roast Log</button>
+      <button class="ops-tab" onclick="showSection('inventory', this)">Inventory</button>
+      <button class="ops-tab" onclick="showSection('blends', this)">Blends</button>
+      <button class="ops-tab" onclick="showSection('marketing', this)">Marketing</button>
     </nav>
 
     <!-- ═══════════════════════════════════════════════ ORDERS ═══════ -->
@@ -384,6 +384,12 @@
       <div class="section-title">Roast Log</div>
 
       <div class="dash-card">
+        <h2>To Roast</h2>
+        <p style="margin:0 0 0.9rem; font-size:0.88rem; opacity:0.65;">Everything waiting on a roast, pulled from every active order — web sales and store restocks alike.</p>
+        <div id="roast-queue-root"><div class="empty-state">Loading…</div></div>
+      </div>
+
+      <div class="dash-card">
         <h2>Log a Roast Session</h2>
         <div class="two-col">
           <div class="field-group">
@@ -402,7 +408,7 @@
             <input id="roast-lbs" type="number" min="0.1" step="0.1" placeholder="e.g. 20" />
           </div>
           <div class="field-group" id="bags-filled-field">
-            <label>Bags Filled (shelf stock out)</label>
+            <label id="bags-filled-label">Bags Filled (shelf stock out)</label>
             <input id="roast-bags" type="number" min="1" step="1" placeholder="e.g. 24" />
           </div>
           <div class="field-group">
@@ -642,16 +648,14 @@
         document.getElementById("login-overlay").style.display = "none";
         init();
       } else {
+        document.getElementById("login-error").textContent = "Incorrect key. Try again.";
         document.getElementById("login-error").style.display = "block";
         document.getElementById("login-key-input").value = "";
         document.getElementById("login-key-input").focus();
       }
     }).catch(() => {
-      // Offline / dev — just accept the key and proceed
-      adminKey = val;
-      sessionStorage.setItem("ph_admin_key", val);
-      document.getElementById("login-overlay").style.display = "none";
-      init();
+      document.getElementById("login-error").textContent = "Couldn't reach the server. Check your connection and try again.";
+      document.getElementById("login-error").style.display = "block";
     });
   }
 
@@ -681,13 +685,21 @@
   // ═══════════════════════════════════════════════════════════
   //  NAV
   // ═══════════════════════════════════════════════════════════
-  function showSection(name) {
+  function showSection(name, btn) {
     document.querySelectorAll(".ops-section").forEach(s => s.classList.remove("active"));
     document.querySelectorAll(".ops-tab").forEach(t => t.classList.remove("active"));
     document.getElementById(`section-${name}`).classList.add("active");
-    event.currentTarget.classList.add("active");
+
+    if (btn) {
+      btn.classList.add("active");
+    } else {
+      const tabMap = { orders: 0, roast: 1, inventory: 2, blends: 3, marketing: 4 };
+      const tabs = document.querySelectorAll(".ops-tab");
+      if (tabs[tabMap[name]]) tabs[tabMap[name]].classList.add("active");
+    }
 
     if (name === "orders" && allOrders.length === 0) loadOrders();
+    if (name === "roast") renderRoastQueue();
     if (name === "marketing") renderMarketing();
   }
 
@@ -699,9 +711,16 @@
       const res = await fetch("/.netlify/functions/get-ops-data", {
         headers: { "x-admin-key": adminKey }
       });
-      if (!res.ok) return;
+      if (!res.ok) {
+        alert("Couldn't load inventory/blends data (server error). Try refreshing the page.");
+        return;
+      }
       opsData = await res.json();
-    } catch (e) { console.error("loadOpsData", e); }
+    } catch (e) {
+      console.error("loadOpsData", e);
+      alert("Couldn't reach the server to load inventory/blends data. Check your connection and refresh.");
+      return;
+    }
 
     renderInventory();
     renderBlends();
@@ -1020,7 +1039,9 @@
   document.getElementById("roast-type").addEventListener("change", () => {
     const isOrder = document.getElementById("roast-type").value === "order";
     document.getElementById("order-id-field").style.display = isOrder ? "block" : "none";
-    document.getElementById("bags-filled-field").style.display = isOrder ? "none" : "block";
+    document.getElementById("bags-filled-label").textContent = isOrder
+      ? "Units Produced (for this order)"
+      : "Bags Filled (shelf stock out)";
   });
 
   // Set today's date
@@ -1036,7 +1057,11 @@
 
     const bags = Number(document.getElementById("roast-bags").value);
     if (!blend || !lbs || lbs <= 0) { alert("Please enter a blend and amount."); return; }
-    if (roastType === "shelf" && (!bags || bags <= 0)) { alert("Enter how many bags were filled."); return; }
+    if (!bags || bags <= 0) {
+      alert(roastType === "shelf" ? "Enter how many bags were filled." : "Enter how many units this roast produced for the order.");
+      return;
+    }
+    if (roastType === "order" && !orderId) { alert("Enter the Order ID this roast is for."); return; }
 
     try {
       const res = await fetch("/.netlify/functions/log-roast", {
@@ -1055,10 +1080,18 @@
 
       document.getElementById("roast-lbs").value = "";
       document.getElementById("roast-bags").value = "";
+      document.getElementById("roast-order-id").value = "";
       document.getElementById("roast-notes").value = "";
       document.getElementById("roast-green-preview").textContent = "";
 
-      alert(`Roast logged. ${roastType === "shelf" ? `${bags} bags added to shelf stock.` : "Green beans deducted."}`);
+      let msg = `Roast logged. ${roastType === "shelf" ? `${bags} bags added to shelf stock.` : "Green beans deducted."}`;
+      if (data.orderWarning) msg += `\n\n${data.orderWarning}`;
+
+      if (roastType === "order") {
+        await loadOrders(); // refreshes orders + re-renders the To Roast queue
+      }
+
+      alert(msg);
     } catch (e) { alert("Error logging roast: " + e.message); }
   }
 
@@ -1109,7 +1142,78 @@
       if (!res.ok) { alert(data.error || "Failed to load orders"); return; }
       allOrders = data.orders || [];
       renderOrders();
+      renderRoastQueue();
     } catch (e) { console.error("loadOrders", e); }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  TO ROAST QUEUE — remaining roastNeeded across active orders
+  // ═══════════════════════════════════════════════════════════
+  function computeRoastQueue() {
+    const totals = {};
+    const lines = [];
+
+    allOrders.forEach(order => {
+      if (normalizeDashboardStatus(order) !== "active") return;
+      if (order.fulfillmentStatus === "DO NOT FULFILL") return;
+
+      (order.roastNeeded || []).forEach(item => {
+        const remaining = item.quantity - (item.roasted || 0);
+        if (remaining <= 0) return;
+        totals[item.name] = (totals[item.name] || 0) + remaining;
+        lines.push({
+          orderId: order.id,
+          customerName: order.customer?.name || "Order",
+          blend: item.name,
+          remaining
+        });
+      });
+    });
+
+    return { totals, lines };
+  }
+
+  function renderRoastQueue() {
+    const root = document.getElementById("roast-queue-root");
+    if (!root) return;
+
+    const { totals, lines } = computeRoastQueue();
+    const totalEntries = Object.entries(totals).sort(([, a], [, b]) => b - a);
+
+    if (!totalEntries.length) {
+      root.innerHTML = `<div class="empty-state">Nothing waiting on a roast. 🎉</div>`;
+      return;
+    }
+
+    const summaryHtml = totalEntries.map(([name, qty]) => `
+      <div class="inv-item">
+        <div class="inv-label">${name}</div>
+        <div class="inv-val" style="width:auto; font-size:1rem;">${qty} needed</div>
+      </div>`).join("");
+
+    const lineRows = lines.map(l => `
+      <div class="log-row" style="grid-template-columns: 1.2fr 1.4fr 70px auto;">
+        <span><strong>${l.blend}</strong></span>
+        <span>${l.customerName}<br><small style="opacity:0.55">${l.orderId}</small></span>
+        <span>${l.remaining}</span>
+        <span><button class="btn btn-sm btn-gold" onclick="startOrderRoast('${l.orderId.replace(/'/g, "\\'")}', '${l.blend.replace(/'/g, "\\'")}', ${l.remaining})">Log Roast</button></span>
+      </div>`).join("");
+
+    root.innerHTML = `
+      <div style="margin-bottom:1rem;">${summaryHtml}</div>
+      <div style="border-top:1px solid rgba(0,0,0,0.08); padding-top:0.5rem;">${lineRows}</div>`;
+  }
+
+  function startOrderRoast(orderId, blend, remaining) {
+    showSection("roast");
+    const typeSel = document.getElementById("roast-type");
+    typeSel.value = "order";
+    typeSel.dispatchEvent(new Event("change"));
+    document.getElementById("roast-blend").value = blend;
+    document.getElementById("roast-order-id").value = orderId;
+    document.getElementById("roast-bags").value = remaining;
+    updateRoastPreview();
+    document.getElementById("roast-lbs").focus();
   }
 
   function normalizeDashboardStatus(order) {
