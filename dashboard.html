@@ -475,7 +475,7 @@
 
       <div class="dash-card">
         <h2>Manage Origins</h2>
-        <p style="font-size:0.88rem; opacity:0.65; margin:0 0 0.9rem;">The list of green coffee origins available across Inventory and Blend formulas. Removing one here just stops it from being offered for new entries — it won't touch inventory or blends that already use it.</p>
+        <p style="font-size:0.88rem; opacity:0.65; margin:0 0 0.9rem;">The green coffee origins available across Inventory and Blend formulas, plus how much weight each loses during roasting — used to estimate green beans needed in the To Roast queue. Removing an origin here just stops it from being offered for new entries; it won't touch inventory or blends that already use it.</p>
         <div id="origins-list" style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.9rem;"></div>
         <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
           <input id="new-origin-input" placeholder="e.g. Sumatra"
@@ -756,6 +756,9 @@
     "Brazil", "Guatemala", "Ethiopia", "Decaf Colombia", "Colombia",
     "Kenya", "Honduras", "Peru", "Burundi"
   ];
+  let roastLoss = {}; // { originName: percentLostDuringRoasting }
+  const DEFAULT_ROAST_LOSS_PCT = 15;
+  const FINISHED_BAG_LBS = 0.75; // 12oz — matches the size on every product page
 
   // ═══════════════════════════════════════════════════════════
   //  NAV
@@ -799,6 +802,9 @@
 
     if (Array.isArray(opsData.origins) && opsData.origins.length) {
       ORIGINS = opsData.origins;
+    }
+    if (opsData.roastLoss && typeof opsData.roastLoss === "object") {
+      roastLoss = opsData.roastLoss;
     }
 
     renderInventory();
@@ -973,10 +979,30 @@
     const root = document.getElementById("origins-list");
     if (!root) return;
     root.innerHTML = ORIGINS.map(name => `
-      <span style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.4rem 0.5rem 0.4rem 0.8rem; background:rgba(0,0,0,0.05); border-radius:999px; font-size:0.85rem; font-weight:700;">
+      <span style="display:inline-flex; align-items:center; gap:0.45rem; padding:0.35rem 0.5rem 0.35rem 0.8rem; background:rgba(0,0,0,0.05); border-radius:999px; font-size:0.85rem; font-weight:700;">
         ${name}
+        <input type="number" min="0" max="60" step="1" value="${roastLoss[name] ?? DEFAULT_ROAST_LOSS_PCT}"
+          title="Roast loss % for ${name}"
+          style="width:48px; padding:0.2rem 0.3rem; border-radius:8px; border:1px solid rgba(0,0,0,0.15); font:inherit; font-size:0.78rem; font-weight:700; text-align:center;"
+          onchange="updateRoastLoss('${name.replace(/'/g, "\\'")}', this.value)" />
+        <span style="font-size:0.7rem; opacity:0.55; font-weight:600;">% loss</span>
         <button class="btn btn-sm btn-gray" style="padding:0.15rem 0.5rem; font-size:0.75rem;" onclick="removeOrigin('${name.replace(/'/g, "\\'")}')">✕</button>
       </span>`).join("");
+  }
+
+  async function updateRoastLoss(name, value) {
+    const pct = Math.max(0, Math.min(60, Number(value) || 0));
+    roastLoss[name] = pct;
+    renderRoastQueue();
+    try {
+      const res = await fetch("/.netlify/functions/save-roast-loss", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
+        body: JSON.stringify({ roastLoss })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+    } catch (e) { alert("Error saving roast loss %: " + e.message); }
   }
 
   async function saveOrigins() {
@@ -1311,6 +1337,52 @@
     return { totals, lines };
   }
 
+  function computeBeanBreakdown(blendTotals) {
+    const originLbs = {};
+
+    Object.entries(blendTotals).forEach(([blendName, bags]) => {
+      const formula = opsData.blends[blendName];
+      if (!formula) return;
+
+      const roastedLbsNeeded = bags * FINISHED_BAG_LBS;
+
+      Object.entries(formula).forEach(([origin, pct]) => {
+        const originRoastedLbs = roastedLbsNeeded * (Number(pct) / 100);
+        const lossPct = roastLoss[origin] ?? DEFAULT_ROAST_LOSS_PCT;
+        const greenLbs = originRoastedLbs / (1 - lossPct / 100);
+        originLbs[origin] = (originLbs[origin] || 0) + greenLbs;
+      });
+    });
+
+    return originLbs;
+  }
+
+  function renderBeanBreakdown(blendTotals) {
+    const needed = computeBeanBreakdown(blendTotals);
+    const entries = Object.entries(needed).sort(([, a], [, b]) => b - a);
+    if (!entries.length) return "";
+
+    const rows = entries.map(([origin, lbs]) => {
+      const have = (opsData.inventory.green || {})[origin] || 0;
+      const short = have < lbs;
+      return `
+        <div class="inv-item">
+          <div class="inv-label">${origin}</div>
+          <div class="inv-val" style="width:auto; font-size:0.95rem; ${short ? "color:#b91c1c;" : ""}">
+            ${lbs.toFixed(1)} lbs needed${short ? ` <span class="low-stock-badge">SHORT ${(lbs - have).toFixed(1)} lbs</span>` : " · have enough ✓"}
+          </div>
+        </div>`;
+    }).join("");
+
+    return `
+      <div style="margin-bottom:1rem; padding-top:0.25rem;">
+        <div style="font-size:0.78rem; font-weight:700; opacity:0.55; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.5rem;">
+          Green Beans Needed <span style="font-weight:500; text-transform:none;">(estimate — 12oz bags, each origin's roast-loss %)</span>
+        </div>
+        ${rows}
+      </div>`;
+  }
+
   function renderRoastQueue() {
     const root = document.getElementById("roast-queue-root");
     if (!root) return;
@@ -1329,6 +1401,8 @@
         <div class="inv-val" style="width:auto; font-size:1rem;">${qty} needed</div>
       </div>`).join("");
 
+    const beanHtml = renderBeanBreakdown(totals);
+
     const lineRows = lines.map(l => `
       <div class="log-row" style="grid-template-columns: 1.2fr 1.4fr 70px auto;">
         <span><strong>${l.blend}</strong></span>
@@ -1339,6 +1413,7 @@
 
     root.innerHTML = `
       <div style="margin-bottom:1rem;">${summaryHtml}</div>
+      ${beanHtml}
       <div style="border-top:1px solid rgba(0,0,0,0.08); padding-top:0.5rem;">${lineRows}</div>`;
   }
 

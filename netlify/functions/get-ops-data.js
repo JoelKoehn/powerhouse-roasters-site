@@ -40,22 +40,24 @@ exports.handler = async (event) => {
     connectLambda(event);
     const store = getStore("ops");
 
-    const [blendsRaw, inventoryRaw, roastLogRaw, originsRaw] = await Promise.all([
+    const [blendsRaw, inventoryRaw, roastLogRaw, originsRaw, roastLossRaw] = await Promise.all([
       store.get("blends").catch(() => null),
       store.get("inventory").catch(() => null),
       store.get("roast-log").catch(() => null),
-      store.get("origins").catch(() => null)
+      store.get("origins").catch(() => null),
+      store.get("roast-loss").catch(() => null)
     ]);
 
     const blends = blendsRaw ? JSON.parse(blendsRaw) : DEFAULT_BLENDS;
     const inventory = inventoryRaw ? JSON.parse(inventoryRaw) : DEFAULT_INVENTORY;
     const roastLog = roastLogRaw ? JSON.parse(roastLogRaw) : [];
     const origins = originsRaw ? JSON.parse(originsRaw) : DEFAULT_ORIGINS;
+    const roastLoss = roastLossRaw ? JSON.parse(roastLossRaw) : {};
 
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ blends, inventory, roastLog, origins })
+      body: JSON.stringify({ blends, inventory, roastLog, origins, roastLoss })
     };
   } catch (error) {
     console.error("get-ops-data error:", error);
