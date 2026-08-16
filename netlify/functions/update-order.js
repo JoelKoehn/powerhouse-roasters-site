@@ -22,7 +22,12 @@ exports.handler = async (event) => {
       shippingStatus,
       trackingNumber,
       notes,
-      dashboardStatus
+      dashboardStatus,
+      customer,
+      orderType,
+      paymentMethod,
+      paymentStatus,
+      items
     } = JSON.parse(event.body || "{}");
 
     if (!orderId) {
@@ -68,6 +73,69 @@ exports.handler = async (event) => {
 
       if (dashboardStatus === "archived") {
         order.archivedAt = new Date().toISOString();
+      }
+    }
+
+    if (customer && typeof customer === "object") {
+      order.customer = {
+        name: typeof customer.name === "string" ? customer.name : order.customer.name,
+        email: typeof customer.email === "string" ? customer.email : order.customer.email
+      };
+    }
+
+    if (typeof orderType === "string") order.orderType = orderType;
+    if (typeof paymentMethod === "string") order.paymentMethod = paymentMethod;
+    if (typeof paymentStatus === "string") order.paymentStatus = paymentStatus;
+
+    if (Array.isArray(items) && items.length > 0) {
+      if (order.source !== "Manual") {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "Items can't be edited on this order — it came from a real Stripe payment and items must match what was actually charged."
+          })
+        };
+      }
+
+      const normalizedItems = items.map((item) => {
+        const quantity = Number(item.quantity || 0);
+        const unitAmount = Number(item.unit_amount || 0);
+
+        if (!item.name || !Number.isFinite(quantity) || quantity <= 0) {
+          throw new Error("Invalid item data");
+        }
+
+        return {
+          name: item.name,
+          quantity,
+          unit_amount: unitAmount,
+          amount_total: unitAmount * quantity,
+          currency: "usd"
+        };
+      });
+
+      const previousRoasted = {};
+      (order.roastNeeded || []).forEach((line) => {
+        previousRoasted[line.name] = line.roasted || 0;
+      });
+
+      const roastMap = {};
+      normalizedItems.forEach((item) => {
+        roastMap[item.name] = (roastMap[item.name] || 0) + item.quantity;
+      });
+
+      order.roastNeeded = Object.entries(roastMap).map(([name, quantity]) => ({
+        name,
+        quantity,
+        roasted: Math.min(quantity, previousRoasted[name] || 0)
+      }));
+
+      order.items = normalizedItems;
+      order.amountTotal = normalizedItems.reduce((sum, item) => sum + item.amount_total, 0);
+
+      const allFulfilled = order.roastNeeded.every((line) => line.roasted >= line.quantity);
+      if (!allFulfilled && order.fulfillmentStatus === "Roasted") {
+        order.fulfillmentStatus = "Needs Roast";
       }
     }
 

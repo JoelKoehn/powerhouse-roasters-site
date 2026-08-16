@@ -595,6 +595,69 @@
     </div>
   </div>
 
+  <!-- ── Edit Order Modal ── -->
+  <div class="modal-overlay" id="edit-order-modal">
+    <div class="modal-box" style="max-width:720px;">
+      <div class="modal-header">
+        <h2>Edit Order</h2>
+        <button class="btn btn-dark btn-sm" onclick="closeEditOrder()">Close</button>
+      </div>
+
+      <div id="edit-order-warning" style="display:none; margin-bottom:1rem; padding:0.75rem 1rem; border-radius:12px; background:#fef2f2; border:1px solid #fca5a5; color:#b91c1c; font-size:0.85rem; font-weight:700;"></div>
+
+      <div class="two-col">
+        <div class="field-group">
+          <label>Customer Name</label>
+          <input id="edit-customer-name" placeholder="Full name" />
+        </div>
+        <div class="field-group">
+          <label>Customer Email</label>
+          <input id="edit-customer-email" placeholder="email@example.com" />
+        </div>
+        <div class="field-group">
+          <label>Order Type</label>
+          <select id="edit-order-type">
+            <option value="Retail">Retail</option>
+            <option value="Wholesale">Wholesale</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>Payment Method</label>
+          <select id="edit-payment-method">
+            <option value="cash">Cash</option>
+            <option value="invoice">Invoice</option>
+            <option value="stripe">Stripe</option>
+            <option value="check">Check</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>Payment Status</label>
+          <select id="edit-payment-status">
+            <option value="paid">Paid</option>
+            <option value="unpaid">Unpaid</option>
+            <option value="partial">Partial</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-top:1.1rem;">
+        <label style="font-size:0.8rem; font-weight:700; opacity:0.65; text-transform:uppercase; letter-spacing:0.04em;">Items</label>
+        <div id="edit-items-root" style="margin-top:0.5rem;"></div>
+        <button class="btn btn-sm btn-gray" id="edit-add-item-btn" onclick="addEditItemRow()" style="margin-top:0.5rem;">+ Add Item</button>
+      </div>
+
+      <div class="field-group" style="margin-top:1.1rem;">
+        <label>Notes</label>
+        <input id="edit-order-notes" placeholder="Optional notes" />
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-gold" onclick="submitEditOrder()">Save Changes</button>
+        <button class="btn btn-gray" onclick="closeEditOrder()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ── Inventory Edit Modal ── -->
   <div class="modal-overlay" id="inv-edit-modal">
     <div class="modal-box">
@@ -1293,10 +1356,12 @@
           <input id="tracking-${order.id}" placeholder="Tracking #" value="${order.trackingNumber || ""}" style="width:130px;" />
           <input id="notes-${order.id}" placeholder="Notes" value="${order.notes || ""}" style="flex:1; min-width:120px;" />
           <button class="btn btn-gold btn-sm" onclick="saveOrder('${order.id}')">Save</button>
+          <button class="btn btn-gray btn-sm" onclick="openEditOrder('${order.id}')">Edit</button>
           <button class="btn btn-gray btn-sm" onclick="setOrderStatus('${order.id}','review')">Review</button>
           <button class="btn btn-gray btn-sm" onclick="setOrderStatus('${order.id}','completed')">Complete</button>
           <button class="btn btn-gray btn-sm" onclick="setOrderStatus('${order.id}','active')">Activate</button>
           <button class="btn btn-red btn-sm" onclick="setOrderStatus('${order.id}','archived')">Archive</button>
+          ${order.source === "Manual" ? `<button class="btn btn-red btn-sm" onclick="deleteOrder('${order.id}')">Delete</button>` : ""}
         </div>
       </div>`).join("");
   }
@@ -1368,6 +1433,131 @@
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to create");
       closeCreateOrder();
+      await loadOrders();
+    } catch (e) { alert(e.message); }
+  }
+
+  let editingOrderId = null;
+
+  function openEditOrder(orderId) {
+    const order = allOrders.find(o => o.id === orderId);
+    if (!order) return;
+    editingOrderId = orderId;
+
+    document.getElementById("edit-customer-name").value = order.customer?.name || "";
+    document.getElementById("edit-customer-email").value = order.customer?.email || "";
+    document.getElementById("edit-order-type").value = order.orderType || "Retail";
+    document.getElementById("edit-payment-method").value = order.paymentMethod || "cash";
+    document.getElementById("edit-payment-status").value = order.paymentStatus || "paid";
+    document.getElementById("edit-order-notes").value = order.notes || "";
+
+    const isManual = order.source === "Manual";
+    const warning = document.getElementById("edit-order-warning");
+    if (!isManual) {
+      warning.textContent = "This order came from a real Stripe payment — items and pricing are locked to protect the payment record. You can still fix customer info, status, and notes.";
+      warning.style.display = "block";
+    } else {
+      warning.style.display = "none";
+    }
+    document.getElementById("edit-add-item-btn").style.display = isManual ? "inline-block" : "none";
+
+    document.getElementById("edit-items-root").innerHTML = "";
+    (order.items || []).forEach(item => addEditItemRow(item));
+
+    document.getElementById("edit-order-modal").style.display = "block";
+  }
+
+  function addEditItemRow(item) {
+    const order = allOrders.find(o => o.id === editingOrderId);
+    const isManual = !order || order.source === "Manual";
+
+    const row = document.createElement("div");
+    row.className = "blend-formula-row";
+    row.setAttribute("data-edit-item-row", "");
+    row.innerHTML = `
+      <select class="edit-item-name">
+        ${BLEND_NAMES.map(n => `<option${item && n === item.name ? " selected" : ""}>${n}</option>`).join("")}
+      </select>
+      <input type="number" min="1" step="1" class="edit-item-qty" value="${item ? item.quantity : 1}" style="width:70px;" placeholder="Qty" />
+      <input type="number" min="0" step="1" class="edit-item-price" value="${item ? item.unit_amount : 1900}" style="width:90px;" placeholder="Cents" />
+      <button class="btn btn-sm btn-gray" type="button" onclick="this.closest('[data-edit-item-row]').remove()">✕</button>
+    `;
+
+    if (!isManual) {
+      row.querySelectorAll("select, input, button").forEach(el => el.disabled = true);
+    }
+
+    document.getElementById("edit-items-root").appendChild(row);
+  }
+
+  function closeEditOrder() {
+    document.getElementById("edit-order-modal").style.display = "none";
+    editingOrderId = null;
+  }
+
+  async function submitEditOrder() {
+    if (!editingOrderId) return;
+    const order = allOrders.find(o => o.id === editingOrderId);
+    if (!order) return;
+
+    const payload = {
+      orderId: editingOrderId,
+      customer: {
+        name: document.getElementById("edit-customer-name").value.trim(),
+        email: document.getElementById("edit-customer-email").value.trim()
+      },
+      orderType: document.getElementById("edit-order-type").value,
+      paymentMethod: document.getElementById("edit-payment-method").value,
+      paymentStatus: document.getElementById("edit-payment-status").value,
+      notes: document.getElementById("edit-order-notes").value.trim()
+    };
+
+    if (order.source === "Manual") {
+      const rows = Array.from(document.querySelectorAll("[data-edit-item-row]"));
+      const items = rows.map(row => ({
+        name: row.querySelector(".edit-item-name").value,
+        quantity: Number(row.querySelector(".edit-item-qty").value) || 0,
+        unit_amount: Number(row.querySelector(".edit-item-price").value) || 0
+      }));
+      if (!items.length || items.some(i => i.quantity <= 0)) {
+        alert("Each item needs a valid quantity.");
+        return;
+      }
+      payload.items = items;
+    }
+
+    try {
+      const res = await fetch("/.netlify/functions/update-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to save");
+      closeEditOrder();
+      await loadOrders();
+    } catch (e) { alert(e.message); }
+  }
+
+  async function deleteOrder(orderId) {
+    const order = allOrders.find(o => o.id === orderId);
+    if (!order) return;
+
+    if (order.source !== "Manual") {
+      alert("This order came from a real Stripe payment and can't be permanently deleted — archive it instead.");
+      return;
+    }
+
+    if (!confirm(`Permanently delete this order for ${order.customer?.name || "this customer"}? This can't be undone.`)) return;
+
+    try {
+      const res = await fetch("/.netlify/functions/delete-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
+        body: JSON.stringify({ orderId })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to delete");
       await loadOrders();
     } catch (e) { alert(e.message); }
   }
