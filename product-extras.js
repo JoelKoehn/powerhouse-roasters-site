@@ -4,6 +4,45 @@
   const ONE_TIME_PRICE = 1900; // cents
   const SUB_PRICE = 1600;      // cents — Subscribe & Save
 
+  // ── Grind Selector ────────────────────────────────────────
+
+  function injectGrindSelector() {
+    const priceEl = document.querySelector(".fpd-price");
+    if (!priceEl) return;
+
+    const selector = document.createElement("div");
+    selector.className = "purchase-options";
+    selector.id = "grind-selector";
+    selector.innerHTML = `
+      <label class="purchase-option selected" id="grind-opt-whole">
+        <input type="radio" name="grind-select" value="whole-bean" checked>
+        <span class="purchase-option-label">
+          <span class="purchase-option-title">Whole Bean</span>
+        </span>
+      </label>
+      <label class="purchase-option" id="grind-opt-ground">
+        <input type="radio" name="grind-select" value="ground">
+        <span class="purchase-option-label">
+          <span class="purchase-option-title">Ground</span>
+        </span>
+      </label>
+    `;
+
+    priceEl.insertAdjacentElement("afterend", selector);
+
+    selector.querySelectorAll("input[type=radio]").forEach(radio => {
+      radio.addEventListener("change", function () {
+        document.getElementById("grind-opt-whole").classList.toggle("selected", this.value === "whole-bean");
+        document.getElementById("grind-opt-ground").classList.toggle("selected", this.value === "ground");
+      });
+    });
+  }
+
+  function getSelectedGrind() {
+    const input = document.querySelector('input[name="grind-select"]:checked');
+    return input ? input.value : "whole-bean";
+  }
+
   // ── Subscription Selector ────────────────────────────────
 
   function injectSubscriptionSelector() {
@@ -42,7 +81,8 @@
       </div>
     `;
 
-    priceEl.insertAdjacentElement("afterend", selector);
+    const anchor = document.getElementById("grind-selector") || priceEl;
+    anchor.insertAdjacentElement("afterend", selector);
 
     selector.querySelectorAll("input[type=radio]").forEach(radio => {
       radio.addEventListener("change", function () {
@@ -59,17 +99,17 @@
         e.preventDefault();
         e.stopImmediatePropagation();
         const frequency = document.getElementById("sub-frequency")?.value || "monthly";
-        startSubscriptionCheckout(productName, frequency);
+        startSubscriptionCheckout(productName, frequency, getSelectedGrind());
       }
     }, true);
   }
 
-  async function startSubscriptionCheckout(productName, frequency) {
+  async function startSubscriptionCheckout(productName, frequency, grind) {
     try {
       const res = await fetch("/.netlify/functions/create-subscription-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productName, frequency })
+        body: JSON.stringify({ productName, frequency, grind })
       });
       const data = await res.json();
       if (data.url) {
@@ -207,10 +247,12 @@
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", function () {
+      injectGrindSelector();
       injectSubscriptionSelector();
       injectReviews();
     });
   } else {
+    injectGrindSelector();
     injectSubscriptionSelector();
     injectReviews();
   }

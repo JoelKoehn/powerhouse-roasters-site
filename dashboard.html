@@ -597,6 +597,13 @@
           <label>Unit Price (cents)</label>
           <input id="create-item-price" type="number" min="0" step="1" value="1900" />
         </div>
+        <div class="field-group">
+          <label>Grind</label>
+          <select id="create-item-grind">
+            <option value="whole-bean">Whole Bean</option>
+            <option value="ground">Ground</option>
+          </select>
+        </div>
         <div class="field-group" style="grid-column: span 2;">
           <label>Notes</label>
           <input id="create-order-notes" placeholder="Optional notes" />
@@ -1471,7 +1478,7 @@
           <div class="order-box">
             <strong>Items</strong>
             <ul class="items-list">
-              ${(order.items || []).map(i => `<li>${i.name} × ${i.quantity}</li>`).join("")}
+              ${(order.items || []).map(i => `<li>${i.name} × ${i.quantity} <small style="opacity:0.6;">(${i.grind === "ground" ? "Ground" : "Whole Bean"})</small></li>`).join("")}
             </ul>
           </div>
           <div class="order-box">
@@ -1567,6 +1574,7 @@
     const itemName = document.getElementById("create-item-name").value;
     const itemQuantity = Number(document.getElementById("create-item-quantity").value || 0);
     const itemPrice = Number(document.getElementById("create-item-price").value || 0);
+    const itemGrind = document.getElementById("create-item-grind").value;
     const notes = document.getElementById("create-order-notes").value.trim();
 
     if (!customerName) { alert("Customer name required."); return; }
@@ -1578,7 +1586,7 @@
         headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
         body: JSON.stringify({
           customer: { name: customerName, email: customerEmail },
-          items: [{ name: itemName, quantity: itemQuantity, unit_amount: itemPrice }],
+          items: [{ name: itemName, quantity: itemQuantity, unit_amount: itemPrice, grind: itemGrind }],
           source: "Manual", orderType, paymentMethod, paymentStatus,
           dashboardStatus: "active", notes
         })
@@ -1627,12 +1635,17 @@
     const row = document.createElement("div");
     row.className = "blend-formula-row";
     row.setAttribute("data-edit-item-row", "");
+    const grindVal = item && item.grind === "ground" ? "ground" : "whole-bean";
     row.innerHTML = `
       <select class="edit-item-name">
         ${BLEND_NAMES.map(n => `<option${item && n === item.name ? " selected" : ""}>${n}</option>`).join("")}
       </select>
       <input type="number" min="1" step="1" class="edit-item-qty" value="${item ? item.quantity : 1}" style="width:70px;" placeholder="Qty" />
       <input type="number" min="0" step="1" class="edit-item-price" value="${item ? item.unit_amount : 1900}" style="width:90px;" placeholder="Cents" />
+      <select class="edit-item-grind" style="width:110px;">
+        <option value="whole-bean"${grindVal === "whole-bean" ? " selected" : ""}>Whole Bean</option>
+        <option value="ground"${grindVal === "ground" ? " selected" : ""}>Ground</option>
+      </select>
       <button class="btn btn-sm btn-gray" type="button" onclick="this.closest('[data-edit-item-row]').remove()">✕</button>
     `;
 
@@ -1670,7 +1683,8 @@
       const items = rows.map(row => ({
         name: row.querySelector(".edit-item-name").value,
         quantity: Number(row.querySelector(".edit-item-qty").value) || 0,
-        unit_amount: Number(row.querySelector(".edit-item-price").value) || 0
+        unit_amount: Number(row.querySelector(".edit-item-price").value) || 0,
+        grind: row.querySelector(".edit-item-grind")?.value === "ground" ? "ground" : "whole-bean"
       }));
       if (!items.length || items.some(i => i.quantity <= 0)) {
         alert("Each item needs a valid quantity.");

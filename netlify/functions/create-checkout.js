@@ -3,34 +3,45 @@ const Stripe = require("stripe");
 const FREE_SHIPPING_THRESHOLD = 7500; // $75.00 in cents
 const PRODUCT_PRICE_CENTS = 1900; // $19.00 — update here to change all product prices
 
+// NOTE: "name" here must exactly match the blend keys used in the ops
+// dashboard's Blends editor and roastNeeded aggregation. Do not decorate
+// it (e.g. "Full Power Dark - Bold & Rich") — that breaks the roast
+// queue's blend-formula lookup for every order built from this map.
+// Use "tagline" for the flavor blurb shown at checkout instead.
 const PRODUCT_MAP = {
   "Brazil": {
-    name: "Brazil - Smooth & Balanced",
+    name: "Brazil",
+    tagline: "Smooth & Balanced",
     unit_amount: PRODUCT_PRICE_CENTS,
     image: "https://powerhouseroasters.com/images/brazil-bag.jpg"
   },
   "Guatemala": {
-    name: "Guatemala - Bright & Structured",
+    name: "Guatemala",
+    tagline: "Bright & Structured",
     unit_amount: PRODUCT_PRICE_CENTS,
     image: "https://powerhouseroasters.com/images/guate-bag.jpg"
   },
   "Ethiopia": {
-    name: "Ethiopia - Floral & Citrus",
+    name: "Ethiopia",
+    tagline: "Floral & Citrus",
     unit_amount: PRODUCT_PRICE_CENTS,
     image: "https://powerhouseroasters.com/images/ethiopia-bag.jpg"
   },
   "Range Line Roast": {
-    name: "Range Line Roast - House Blend",
+    name: "Range Line Roast",
+    tagline: "House Blend",
     unit_amount: PRODUCT_PRICE_CENTS,
     image: "https://powerhouseroasters.com/images/rangeline-bag.jpg"
   },
   "Stillwater Decaf": {
-    name: "Stillwater Decaf - Smooth & Clean",
+    name: "Stillwater Decaf",
+    tagline: "Smooth & Clean",
     unit_amount: PRODUCT_PRICE_CENTS,
     image: "https://powerhouseroasters.com/images/swater-bag.jpg"
   },
   "Full Power Dark": {
-    name: "Full Power Dark - Bold & Rich",
+    name: "Full Power Dark",
+    tagline: "Bold & Rich",
     unit_amount: PRODUCT_PRICE_CENTS,
     image: "https://powerhouseroasters.com/images/fpdark-bag.jpg"
   }
@@ -101,14 +112,18 @@ exports.handler = async (event) => {
 
       subtotal += product.unit_amount * quantity;
 
+      const grind = item.grind === "ground" ? "ground" : "whole-bean";
+      const grindLabel = grind === "ground" ? "Ground" : "Whole Bean";
+
       return {
         quantity,
         price_data: {
           currency: "usd",
           product_data: {
             name: product.name,
-            description: "Wyoming roasted - Small-batch coffee",
-            images: [product.image]
+            description: `${product.tagline} — Wyoming roasted, small-batch · ${grindLabel}`,
+            images: [product.image],
+            metadata: { grind }
           },
           unit_amount: product.unit_amount
         }

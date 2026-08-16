@@ -14,13 +14,15 @@ exports.handler = async (event) => {
   }
 
   try {
-    const { productName, frequency = "monthly" } = JSON.parse(event.body || "{}");
+    const { productName, frequency = "monthly", grind = "whole-bean" } = JSON.parse(event.body || "{}");
 
     if (!productName) {
       return { statusCode: 400, body: JSON.stringify({ error: "productName required" }) };
     }
 
     const freq = FREQUENCY_MAP[frequency] || FREQUENCY_MAP.monthly;
+    const grindValue = grind === "ground" ? "ground" : "whole-bean";
+    const grindLabel = grindValue === "ground" ? "Ground" : "Whole Bean";
     const origin = event.headers.origin || process.env.URL || "https://powerhouseroasters.com";
 
     const session = await stripe.checkout.sessions.create({
@@ -33,8 +35,9 @@ exports.handler = async (event) => {
             unit_amount: 1600,
             recurring: { interval: freq.interval, interval_count: freq.interval_count },
             product_data: {
-              name: `${productName} — Subscribe & Save`,
-              description: `${freq.label} delivery • Fresh-roasted small-batch coffee`
+              name: productName,
+              description: `${freq.label} delivery • Fresh-roasted small-batch coffee · ${grindLabel}`,
+              metadata: { grind: grindValue }
             }
           },
           quantity: 1

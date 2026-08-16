@@ -57,11 +57,12 @@ exports.handler = async (event) => {
 
       const lineItemsResponse = await stripe.checkout.sessions.listLineItems(
         session.id,
-        { limit: 100 }
+        { limit: 100, expand: ["data.price.product"] }
       );
 
       const items = lineItemsResponse.data.map((line) => ({
-        name: line.description,
+        name: line.price?.product?.name || line.description,
+        grind: line.price?.product?.metadata?.grind === "ground" ? "ground" : "whole-bean",
         quantity: line.quantity,
         amount_total: line.amount_total,
         currency: line.currency

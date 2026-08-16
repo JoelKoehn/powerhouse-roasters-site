@@ -110,7 +110,8 @@ exports.handler = async (event) => {
           quantity,
           unit_amount: unitAmount,
           amount_total: unitAmount * quantity,
-          currency: "usd"
+          currency: "usd",
+          grind: item.grind === "ground" ? "ground" : "whole-bean"
         };
       });
 

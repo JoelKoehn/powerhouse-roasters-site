@@ -58,12 +58,22 @@ function saveCart(cart) {
   updateCartCount();
 }
 
-function addToCart(productName, qty = 1) {
+function normalizeGrind(grind) {
+  return grind === "ground" ? "ground" : "whole-bean";
+}
+
+function findCartItem(cart, productName, grind) {
+  const g = normalizeGrind(grind);
+  return cart.find(item => item.name === productName && normalizeGrind(item.grind) === g);
+}
+
+function addToCart(productName, grind = "whole-bean", qty = 1) {
   const product = PRODUCTS[productName];
   if (!product) return;
 
+  const g = normalizeGrind(grind);
   const cart = getCart();
-  const existing = cart.find(item => item.name === productName);
+  const existing = findCartItem(cart, productName, g);
 
   if (existing) {
     existing.quantity += qty;
@@ -74,6 +84,7 @@ function addToCart(productName, qty = 1) {
       image: product.image,
       page: product.page,
       roast: product.roast,
+      grind: g,
       quantity: qty
     });
   }
@@ -82,20 +93,21 @@ function addToCart(productName, qty = 1) {
   openCartDrawer();
 }
 
-function removeFromCart(productName) {
-  const cart = getCart().filter(item => item.name !== productName);
+function removeFromCart(productName, grind) {
+  const g = normalizeGrind(grind);
+  const cart = getCart().filter(item => !(item.name === productName && normalizeGrind(item.grind) === g));
   saveCart(cart);
   renderCartPage();
   renderCartDrawer();
 }
 
-function updateQuantity(productName, quantity) {
+function updateQuantity(productName, grind, quantity) {
   const cart = getCart();
-  const item = cart.find(i => i.name === productName);
+  const item = findCartItem(cart, productName, grind);
   if (!item) return;
 
   if (quantity <= 0) {
-    removeFromCart(productName);
+    removeFromCart(productName, grind);
     return;
   }
 
@@ -105,13 +117,13 @@ function updateQuantity(productName, quantity) {
   renderCartDrawer();
 }
 
-function drawerUpdateQty(productName, delta) {
+function drawerUpdateQty(productName, grind, delta) {
   const cart = getCart();
-  const item = cart.find(i => i.name === productName);
+  const item = findCartItem(cart, productName, grind);
   if (!item) return;
   const newQty = item.quantity + delta;
   if (newQty <= 0) {
-    removeFromCart(productName);
+    removeFromCart(productName, grind);
   } else {
     item.quantity = newQty;
     saveCart(cart);
@@ -217,6 +229,8 @@ function renderCartDrawer() {
 
   itemsEl.innerHTML = cart.map(item => {
     const safeName = item.name.replace(/'/g, "\\'");
+    const grind = normalizeGrind(item.grind);
+    const grindLabel = grind === "ground" ? "Ground" : "Whole Bean";
     return `
       <div class="drawer-item">
         <a href="${item.page}">
@@ -224,13 +238,13 @@ function renderCartDrawer() {
         </a>
         <div>
           <div class="drawer-item-name">${item.name}</div>
-          <div class="drawer-item-roast">${item.roast || ""}</div>
+          <div class="drawer-item-roast">${item.roast || ""}${item.roast ? " · " : ""}${grindLabel}</div>
           <div class="drawer-qty-row">
-            <button class="drawer-qty-btn" onclick="drawerUpdateQty('${safeName}', -1)">−</button>
+            <button class="drawer-qty-btn" onclick="drawerUpdateQty('${safeName}', '${grind}', -1)">−</button>
             <span class="drawer-qty-val">${item.quantity}</span>
-            <button class="drawer-qty-btn" onclick="drawerUpdateQty('${safeName}', 1)">+</button>
+            <button class="drawer-qty-btn" onclick="drawerUpdateQty('${safeName}', '${grind}', 1)">+</button>
           </div>
-          <button class="drawer-remove-btn" onclick="removeFromCart('${safeName}')">Remove</button>
+          <button class="drawer-remove-btn" onclick="removeFromCart('${safeName}', '${grind}')">Remove</button>
         </div>
         <div class="drawer-item-total">${formatMoney(item.price * item.quantity)}</div>
       </div>
@@ -293,7 +307,11 @@ function renderCartPage() {
     return;
   }
 
-  cartItemsEl.innerHTML = cart.map(item => `
+  cartItemsEl.innerHTML = cart.map(item => {
+    const safeName = item.name.replace(/'/g, "\\'");
+    const grind = normalizeGrind(item.grind);
+    const grindLabel = grind === "ground" ? "Ground" : "Whole Bean";
+    return `
     <div class="cart-item">
       <a href="${item.page}" class="cart-item-image-wrap">
         <img src="${item.image}" alt="${item.name}" class="cart-item-image">
@@ -301,13 +319,14 @@ function renderCartPage() {
 
       <div class="cart-item-info">
         <a href="${item.page}" class="cart-item-name">${item.name}</a>
+        <div style="font-size:0.85rem; opacity:0.65;">${grindLabel}</div>
         <div class="cart-item-price">${formatMoney(item.price)}</div>
 
         <div class="cart-item-controls">
-          <button class="qty-btn" onclick="updateQuantity('${item.name.replace(/'/g, "\\'")}', ${item.quantity - 1})">−</button>
+          <button class="qty-btn" onclick="updateQuantity('${safeName}', '${grind}', ${item.quantity - 1})">−</button>
           <span class="qty-value">${item.quantity}</span>
-          <button class="qty-btn" onclick="updateQuantity('${item.name.replace(/'/g, "\\'")}', ${item.quantity + 1})">+</button>
-          <button class="remove-btn" onclick="removeFromCart('${item.name.replace(/'/g, "\\'")}')">Remove</button>
+          <button class="qty-btn" onclick="updateQuantity('${safeName}', '${grind}', ${item.quantity + 1})">+</button>
+          <button class="remove-btn" onclick="removeFromCart('${safeName}', '${grind}')">Remove</button>
         </div>
       </div>
 
@@ -315,7 +334,8 @@ function renderCartPage() {
         ${formatMoney(item.price * item.quantity)}
       </div>
     </div>
-  `).join("");
+  `;
+  }).join("");
 
   subtotalEl.textContent = formatMoney(subtotal);
 
@@ -335,7 +355,9 @@ function bindAddToCartButtons() {
     button.addEventListener("click", function (e) {
       e.preventDefault();
       const productName = this.dataset.product;
-      addToCart(productName, 1);
+      const grindInput = document.querySelector('input[name="grind-select"]:checked');
+      const grind = grindInput ? grindInput.value : "whole-bean";
+      addToCart(productName, grind, 1);
     });
   });
 }
