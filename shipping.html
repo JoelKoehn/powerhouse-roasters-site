@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shipping &amp; Returns | Powerhouse Roasters</title>
+  <meta name="description" content="Shipping area, cost, and our 30-day no-questions-asked guarantee for Powerhouse Roasters coffee." />
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="logo-area">
+        <a href="index.html" style="display:flex; align-items:center; gap:0.65rem; text-decoration:none;">
+          <img src="images/powerhouse-logo.png" alt="Powerhouse Roasters Logo" class="logo-img" />
+          <span class="site-title">POWERHOUSE ROASTERS</span>
+        </a>
+      </div>
+
+      <nav class="nav">
+        <a href="index.html#coffees">Coffees</a>
+        <a href="our-story.html">Our Story</a>
+        <a href="wholesale.html">Wholesale</a>
+        <a href="index.html#contact">Contact</a>
+        <a href="tel:+13074012441" class="nav-phone">(307) 401-2441</a>
+        <a href="cart.html" class="cart-link">Cart <span class="cart-count">0</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="story-page">
+    <section class="section">
+      <div class="container" style="max-width:760px;">
+        <p class="eyebrow" style="color:var(--gold-dark); letter-spacing:0.16em; font-size:0.78rem; text-transform:uppercase; font-weight:800; margin-bottom:0.75rem;">
+          Shipping &amp; Returns
+        </p>
+
+        <h1 style="font-size:clamp(2rem, 4vw, 2.6rem); line-height:1.15; margin-bottom:1.5rem;">
+          Where your coffee comes from, and what happens if it's not right.
+        </h1>
+
+        <h2 style="font-size:1.3rem; margin-bottom:0.75rem;">Where we ship</h2>
+        <div style="font-size:1.05rem; line-height:1.85; color:rgba(43,43,43,0.9); margin-bottom:2rem;">
+          <p style="margin-bottom:1rem;">We currently ship to the contiguous United States — all 48 states. We're not yet able to ship to Alaska, Hawaii, or internationally.</p>
+          <p>Every order is roasted in small batches on our farm in Torrington, Wyoming, and shipped from there. Once your order ships, you'll get a confirmation email with tracking so you can follow it the rest of the way.</p>
+        </div>
+
+        <h2 style="font-size:1.3rem; margin-bottom:0.75rem;">Shipping cost</h2>
+        <div style="font-size:1.05rem; line-height:1.85; color:rgba(43,43,43,0.9); margin-bottom:2rem;">
+          <p>Free shipping on orders of $75 or more. Below that, shipping is calculated at checkout based on your order and delivery address.</p>
+        </div>
+
+        <h2 style="font-size:1.3rem; margin-bottom:0.75rem;">Our guarantee</h2>
+        <div style="font-size:1.05rem; line-height:1.85; color:rgba(43,43,43,0.9); margin-bottom:2rem;">
+          <p style="margin-bottom:1rem;"><strong>Not your cup? Full refund, no questions asked.</strong> If you're not happy with a bag for any reason, reach out within 30 days of delivery and we'll make it right — no need to ship anything back.</p>
+          <p>Email <a href="mailto:info@powerhouseroasters.com">info@powerhouseroasters.com</a> or call <a href="tel:+13074012441">(307) 401-2441</a> and we'll take care of it directly.</p>
+        </div>
+
+        <h2 style="font-size:1.3rem; margin-bottom:0.75rem;">Questions about a specific order</h2>
+        <div style="font-size:1.05rem; line-height:1.85; color:rgba(43,43,43,0.9);">
+          <p>Reach out any time — we respond personally, usually within 24 hours.</p>
+        </div>
+
+        <div style="margin-top:2.5rem; display:flex; gap:0.85rem; flex-wrap:wrap;">
+          <a href="faq.html" class="btn btn-primary">Read the FAQ</a>
+          <a href="index.html#coffees" class="btn btn-outline" style="color:var(--text); border-color:rgba(0,0,0,0.18); background:transparent;">Shop Coffees</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div style="display:flex; gap:1.25rem; justify-content:center; flex-wrap:wrap; margin-bottom:0.75rem; font-size:0.85rem;">
+        <a href="shipping.html">Shipping &amp; Returns</a>
+        <a href="faq.html">FAQ</a>
+        <a href="wholesale.html">Wholesale</a>
+        <a href="index.html#contact">Contact</a>
+      </div>
+      <p>&copy; <span id="year"></span> Powerhouse Roasters. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+  <script src="cart.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
