@@ -1984,8 +1984,31 @@
               <div style="font-weight:700;">${e.blend} × ${e.quantity} <span class="roast-type-chip ${e.reason === "family" ? "chip-shelf" : "chip-order"}">${e.reason === "family" ? "Family" : "Hay Customer"}</span></div>
               <div style="font-size:0.78rem; opacity:0.6;">${new Date(e.date).toLocaleDateString()}${e.notes ? " — " + e.notes : ""}</div>
             </div>
+            <button class="btn btn-sm btn-red" onclick="deleteShelfUsageEntry('${e.id}')">✕</button>
           </div>`).join("")
       : `<div class="empty-state">No shelf usage logged yet.</div>`;
+  }
+
+  async function deleteShelfUsageEntry(entryId) {
+    const entry = shelfUsageLog.find(e => e.id === entryId);
+    if (!entry) return;
+    if (!confirm(`Delete this log entry? ${entry.quantity} bag${entry.quantity !== 1 ? "s" : ""} of ${entry.blend} will be added back to shelf stock.`)) return;
+
+    try {
+      const res = await fetch("/.netlify/functions/delete-shelf-usage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
+        body: JSON.stringify({ entryId })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      opsData.inventory = data.inventory;
+      shelfUsageLog = shelfUsageLog.filter(e => e.id !== entryId);
+
+      renderInventory();
+      renderShelfUsage();
+    } catch (e) { alert("Error deleting entry: " + e.message); }
   }
 
   // ═══════════════════════════════════════════════════════════
