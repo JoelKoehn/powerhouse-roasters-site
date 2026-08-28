@@ -466,12 +466,22 @@
       </div>
 
       <div class="dash-card">
-        <h2>Set Low-Stock Threshold</h2>
-        <p style="font-size:0.88rem; opacity:0.65; margin:0 0 0.75rem;">Alerts appear when any item falls below this amount (lbs).</p>
-        <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
-          <input id="threshold-input" type="number" min="0" step="1" value="20"
-            style="width:100px; padding:0.55rem 0.75rem; border-radius:10px; border:1px solid rgba(0,0,0,0.14); font:inherit;" />
-          <button class="btn btn-gold" onclick="saveThreshold()">Save Threshold</button>
+        <h2>Set Low-Stock Thresholds</h2>
+        <p style="font-size:0.88rem; opacity:0.65; margin:0 0 0.9rem;">Alerts appear when an item falls below its threshold. Green beans are tracked in lbs and shelf stock in bags, so they get separate numbers.</p>
+        <div class="two-col">
+          <div class="field-group">
+            <label>Green Beans (lbs)</label>
+            <input id="threshold-green-input" type="number" min="0" step="1" value="20"
+              style="width:100px; padding:0.55rem 0.75rem; border-radius:10px; border:1px solid rgba(0,0,0,0.14); font:inherit;" />
+          </div>
+          <div class="field-group">
+            <label>Shelf Stock (bags)</label>
+            <input id="threshold-shelf-input" type="number" min="0" step="1" value="10"
+              style="width:100px; padding:0.55rem 0.75rem; border-radius:10px; border:1px solid rgba(0,0,0,0.14); font:inherit;" />
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-gold" onclick="saveThresholds()">Save Thresholds</button>
           <span id="threshold-saved" style="font-size:0.85rem; color:#16a34a; display:none;">Saved ✓</span>
         </div>
       </div>
@@ -756,7 +766,8 @@
   let allOrders = [];
   let currentOrderView = "active";
   let invEditType = "green"; // "green" or "shelf"
-  let lowThreshold = Number(localStorage.getItem("ph_threshold") || 20);
+  let greenThreshold = Number(localStorage.getItem("ph_threshold_green") || 20);
+  let shelfThreshold = Number(localStorage.getItem("ph_threshold_shelf") || 10);
 
   const BLEND_NAMES = [
     "Full Power Dark", "Range Line Roast", "Brazil",
@@ -828,7 +839,8 @@
   //  INVENTORY
   // ═══════════════════════════════════════════════════════════
   function renderInventory() {
-    document.getElementById("threshold-input").value = lowThreshold;
+    document.getElementById("threshold-green-input").value = greenThreshold;
+    document.getElementById("threshold-shelf-input").value = shelfThreshold;
     renderInvBars("inv-green-bars", opsData.inventory.green || {}, "green");
     renderInvBars("inv-shelf-bars", opsData.inventory.shelf || {}, "shelf");
     renderInvAlerts();
@@ -842,10 +854,11 @@
     }
     const isShelf = type === "shelf";
     const unit = isShelf ? "bags" : "lbs";
-    const max = Math.max(...entries.map(([, v]) => v), lowThreshold * 2, 1);
+    const threshold = isShelf ? shelfThreshold : greenThreshold;
+    const max = Math.max(...entries.map(([, v]) => v), threshold * 2, 1);
     document.getElementById(containerId).innerHTML = entries.map(([name, qty]) => {
       const pct = Math.min(100, (qty / max) * 100);
-      const isLow = qty < lowThreshold;
+      const isLow = qty < threshold;
       const quickAdd = isShelf ? `
         <div style="display:flex; align-items:center; gap:0.35rem; margin-left:0.5rem;">
           <input type="number" min="1" step="1" value="1" id="qadd-${name.replace(/\s/g,'_')}"
@@ -891,18 +904,20 @@
   function renderInvAlerts() {
     const alerts = [];
     for (const [origin, lbs] of Object.entries(opsData.inventory.green || {})) {
-      if (lbs < lowThreshold) alerts.push(`Green: ${origin} is low (${lbs} lbs)`);
+      if (lbs < greenThreshold) alerts.push(`Green: ${origin} is low (${lbs} lbs)`);
     }
-    for (const [blend, lbs] of Object.entries(opsData.inventory.shelf || {})) {
-      if (lbs < lowThreshold) alerts.push(`Shelf: ${blend} is low (${lbs} lbs)`);
+    for (const [blend, bags] of Object.entries(opsData.inventory.shelf || {})) {
+      if (bags < shelfThreshold) alerts.push(`Shelf: ${blend} is low (${bags} bags)`);
     }
     const el = document.getElementById("inv-alerts");
     el.innerHTML = alerts.map(a => `<div class="alert-banner">⚠ ${a}</div>`).join("");
   }
 
-  function saveThreshold() {
-    lowThreshold = Number(document.getElementById("threshold-input").value) || 0;
-    localStorage.setItem("ph_threshold", lowThreshold);
+  function saveThresholds() {
+    greenThreshold = Number(document.getElementById("threshold-green-input").value) || 0;
+    shelfThreshold = Number(document.getElementById("threshold-shelf-input").value) || 0;
+    localStorage.setItem("ph_threshold_green", greenThreshold);
+    localStorage.setItem("ph_threshold_shelf", shelfThreshold);
     renderInventory();
     const saved = document.getElementById("threshold-saved");
     saved.style.display = "inline";
