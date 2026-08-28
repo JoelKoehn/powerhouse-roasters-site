@@ -40,13 +40,12 @@ exports.handler = async (event) => {
     connectLambda(event);
     const store = getStore("ops");
 
-    const [blendsRaw, inventoryRaw, roastLogRaw, originsRaw, roastLossRaw, shelfUsageLogRaw] = await Promise.all([
+    const [blendsRaw, inventoryRaw, roastLogRaw, originsRaw, roastLossRaw] = await Promise.all([
       store.get("blends").catch(() => null),
       store.get("inventory").catch(() => null),
       store.get("roast-log").catch(() => null),
       store.get("origins").catch(() => null),
-      store.get("roast-loss").catch(() => null),
-      store.get("shelf-usage-log").catch(() => null)
+      store.get("roast-loss").catch(() => null)
     ]);
 
     const blends = blendsRaw ? JSON.parse(blendsRaw) : DEFAULT_BLENDS;
@@ -54,12 +53,11 @@ exports.handler = async (event) => {
     const roastLog = roastLogRaw ? JSON.parse(roastLogRaw) : [];
     const origins = originsRaw ? JSON.parse(originsRaw) : DEFAULT_ORIGINS;
     const roastLoss = roastLossRaw ? JSON.parse(roastLossRaw) : {};
-    const shelfUsageLog = shelfUsageLogRaw ? JSON.parse(shelfUsageLogRaw) : [];
 
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ blends, inventory, roastLog, origins, roastLoss, shelfUsageLog })
+      body: JSON.stringify({ blends, inventory, roastLog, origins, roastLoss })
     };
   } catch (error) {
     console.error("get-ops-data error:", error);

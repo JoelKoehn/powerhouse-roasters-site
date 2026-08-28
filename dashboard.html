@@ -554,50 +554,6 @@
           <div id="mkt-customers-list"></div>
         </div>
       </div>
-
-      <div class="dash-card">
-        <h2>Shelf Usage — Family &amp; Marketing</h2>
-        <p style="font-size:0.85rem; opacity:0.65; margin:0 0 0.9rem;">Coffee taken off the shelf for our own drinking or given to hay customers isn't a sale — no revenue, no commission — but log it here so we know how much goes out that way.</p>
-
-        <div class="two-col" style="margin-bottom:0.75rem;">
-          <div class="field-group">
-            <label>Blend</label>
-            <select id="shelf-usage-blend"></select>
-          </div>
-          <div class="field-group">
-            <label>Quantity (bags)</label>
-            <input id="shelf-usage-qty" type="number" min="1" step="1" value="1" />
-          </div>
-          <div class="field-group">
-            <label>Reason</label>
-            <select id="shelf-usage-reason">
-              <option value="family">Family Use</option>
-              <option value="hay-customer">Hay Customer Gift</option>
-            </select>
-          </div>
-          <div class="field-group">
-            <label>Notes (optional)</label>
-            <input id="shelf-usage-notes" placeholder="e.g. Smith family, hay pickup" />
-          </div>
-        </div>
-        <div class="btn-row">
-          <button class="btn btn-gold" onclick="submitShelfUsage()">Log Usage</button>
-        </div>
-
-        <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid rgba(0,0,0,0.08);">
-          <div class="two-col" style="margin-bottom:1rem;">
-            <div class="stat-card">
-              <div class="stat-number" id="shelf-usage-family-month">—</div>
-              <div class="stat-label">Family Use This Month</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-number" id="shelf-usage-hay-month">—</div>
-              <div class="stat-label">Hay Customer Gifts This Month</div>
-            </div>
-          </div>
-          <div id="shelf-usage-log-list"></div>
-        </div>
-      </div>
     </section>
 
   </main>
@@ -835,8 +791,7 @@
   let roastLoss = {}; // { originName: percentLostDuringRoasting }
   const DEFAULT_ROAST_LOSS_PCT = 15;
   const FINISHED_BAG_LBS = 0.75; // 12oz — matches the size on every product page
-  let shelfUsageLog = [];
-  const COMMISSION_RATE = 0.03; // 3% commission on all paid sales — shelf usage isn't a sale, so it's excluded automatically
+  const COMMISSION_RATE = 0.03; // 3% commission on all paid sales — shelf stock is family/hay-customer use, not a sale, so it never becomes an order and is excluded automatically
 
   // ═══════════════════════════════════════════════════════════
   //  NAV
@@ -884,16 +839,12 @@
     if (opsData.roastLoss && typeof opsData.roastLoss === "object") {
       roastLoss = opsData.roastLoss;
     }
-    if (Array.isArray(opsData.shelfUsageLog)) {
-      shelfUsageLog = opsData.shelfUsageLog;
-    }
 
     renderInventory();
     renderBlends();
     populateRoastBlendSelect();
     renderRoastLog();
     renderOriginsManager();
-    renderShelfUsage();
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -1836,7 +1787,6 @@
     document.getElementById("mkt-customers").textContent = uniqueEmails.size;
 
     renderUnpaidOrders();
-    renderShelfUsage();
 
     // Best sellers
     const blendCounts = {};
@@ -1915,100 +1865,6 @@
       await loadOrders();
       doRenderMarketing();
     } catch (e) { alert(e.message); }
-  }
-
-  // ═══════════════════════════════════════════════════════════
-  //  SHELF USAGE — family drinking + hay-customer gifts
-  // ═══════════════════════════════════════════════════════════
-  function populateShelfUsageBlendSelect() {
-    const sel = document.getElementById("shelf-usage-blend");
-    if (!sel) return;
-    const current = sel.value;
-    const blends = Object.keys(opsData.inventory.shelf || {});
-    sel.innerHTML = blends.map(b => `<option${b === current ? " selected" : ""}>${b}</option>`).join("");
-  }
-
-  async function submitShelfUsage() {
-    const blend = document.getElementById("shelf-usage-blend").value;
-    const quantity = Number(document.getElementById("shelf-usage-qty").value);
-    const reason = document.getElementById("shelf-usage-reason").value;
-    const notes = document.getElementById("shelf-usage-notes").value.trim();
-
-    if (!blend || !quantity || quantity <= 0) { alert("Choose a blend and a quantity."); return; }
-
-    try {
-      const res = await fetch("/.netlify/functions/log-shelf-usage", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
-        body: JSON.stringify({ blend, quantity, reason, notes })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-
-      opsData.inventory = data.inventory;
-      shelfUsageLog = [data.entry, ...shelfUsageLog];
-
-      document.getElementById("shelf-usage-qty").value = 1;
-      document.getElementById("shelf-usage-notes").value = "";
-
-      renderInventory();
-      renderShelfUsage();
-    } catch (e) { alert("Error logging usage: " + e.message); }
-  }
-
-  function renderShelfUsage() {
-    populateShelfUsageBlendSelect();
-
-    const familyEl = document.getElementById("shelf-usage-family-month");
-    const hayEl = document.getElementById("shelf-usage-hay-month");
-    const listEl = document.getElementById("shelf-usage-log-list");
-    if (!familyEl || !hayEl || !listEl) return;
-
-    const now = new Date();
-    const thisMonth = now.getFullYear() * 100 + (now.getMonth() + 1);
-    const monthLog = shelfUsageLog.filter(e => {
-      const d = new Date(e.date);
-      return d.getFullYear() * 100 + (d.getMonth() + 1) === thisMonth;
-    });
-
-    const familyQty = monthLog.filter(e => e.reason === "family").reduce((s, e) => s + e.quantity, 0);
-    const hayQty = monthLog.filter(e => e.reason === "hay-customer").reduce((s, e) => s + e.quantity, 0);
-
-    familyEl.textContent = familyQty + " bags";
-    hayEl.textContent = hayQty + " bags";
-
-    listEl.innerHTML = shelfUsageLog.length
-      ? shelfUsageLog.slice(0, 20).map(e => `
-          <div class="customer-row">
-            <div>
-              <div style="font-weight:700;">${e.blend} × ${e.quantity} <span class="roast-type-chip ${e.reason === "family" ? "chip-shelf" : "chip-order"}">${e.reason === "family" ? "Family" : "Hay Customer"}</span></div>
-              <div style="font-size:0.78rem; opacity:0.6;">${new Date(e.date).toLocaleDateString()}${e.notes ? " — " + e.notes : ""}</div>
-            </div>
-            <button class="btn btn-sm btn-red" onclick="deleteShelfUsageEntry('${e.id}')">✕</button>
-          </div>`).join("")
-      : `<div class="empty-state">No shelf usage logged yet.</div>`;
-  }
-
-  async function deleteShelfUsageEntry(entryId) {
-    const entry = shelfUsageLog.find(e => e.id === entryId);
-    if (!entry) return;
-    if (!confirm(`Delete this log entry? ${entry.quantity} bag${entry.quantity !== 1 ? "s" : ""} of ${entry.blend} will be added back to shelf stock.`)) return;
-
-    try {
-      const res = await fetch("/.netlify/functions/delete-shelf-usage", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
-        body: JSON.stringify({ entryId })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-
-      opsData.inventory = data.inventory;
-      shelfUsageLog = shelfUsageLog.filter(e => e.id !== entryId);
-
-      renderInventory();
-      renderShelfUsage();
-    } catch (e) { alert("Error deleting entry: " + e.message); }
   }
 
   // ═══════════════════════════════════════════════════════════
