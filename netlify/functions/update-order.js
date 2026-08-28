@@ -140,6 +140,17 @@ exports.handler = async (event) => {
       }
     }
 
+    // Auto-complete once an order actually ships, so the Marketing tab
+    // doesn't depend on someone remembering to click "Complete" — this
+    // only advances active/review orders, never overrides an explicit
+    // archive or an already-completed order.
+    const hasShipped = ["Shipped", "Delivered"].includes(order.fulfillmentStatus)
+      || ["Shipped", "Delivered"].includes(order.shippingStatus);
+
+    if (hasShipped && (order.dashboardStatus === "active" || order.dashboardStatus === "review")) {
+      order.dashboardStatus = "completed";
+    }
+
     order.updatedAt = new Date().toISOString();
 
     await store.set(key, JSON.stringify(order, null, 2));

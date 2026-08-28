@@ -517,6 +517,7 @@
     <!-- ══════════════════════════════════════════════ MARKETING ══════ -->
     <section id="section-marketing" class="ops-section">
       <div class="section-title">Marketing</div>
+      <p style="margin:-0.75rem 0 1.25rem; font-size:0.85rem; opacity:0.65;">Counts only orders marked Completed and Paid. Revenue and Orders below are this calendar month; Unique Customers, Best Sellers, and the Customer List are all-time.</p>
 
       <div class="three-col" style="margin-bottom:1rem;">
         <div class="stat-card">
@@ -529,17 +530,17 @@
         </div>
         <div class="stat-card">
           <div class="stat-number" id="mkt-customers">—</div>
-          <div class="stat-label">Unique Customers</div>
+          <div class="stat-label">Unique Customers (all-time)</div>
         </div>
       </div>
 
       <div class="two-col">
         <div class="dash-card">
-          <h2>Best Selling Blends</h2>
+          <h2>Best Selling Blends (all-time)</h2>
           <div id="mkt-bestsellers"></div>
         </div>
         <div class="dash-card">
-          <h2>Customer List</h2>
+          <h2>Customer List (all-time)</h2>
           <div id="mkt-customers-list"></div>
         </div>
       </div>
@@ -1756,15 +1757,18 @@
     const now = new Date();
     const thisMonth = now.getFullYear() * 100 + (now.getMonth() + 1);
 
-    const completedOrders = allOrders.filter(o => normalizeDashboardStatus(o) === "completed");
+    // Only orders that are both Completed and actually Paid count toward
+    // marketing/revenue numbers — a wholesale order on net-15 terms
+    // shouldn't show up as money in hand until it's actually paid.
+    const paidOrders = allOrders.filter(o => normalizeDashboardStatus(o) === "completed" && o.paymentStatus === "paid");
 
-    const monthOrders = completedOrders.filter(o => {
+    const monthOrders = paidOrders.filter(o => {
       const d = new Date(o.createdAt);
       return d.getFullYear() * 100 + (d.getMonth() + 1) === thisMonth;
     });
 
     const revenue = monthOrders.reduce((s, o) => s + (o.amountTotal || 0), 0);
-    const uniqueEmails = new Set(completedOrders.map(o => o.customer?.email).filter(Boolean));
+    const uniqueEmails = new Set(paidOrders.map(o => o.customer?.email).filter(Boolean));
 
     document.getElementById("mkt-revenue").textContent = "$" + (revenue / 100).toFixed(2);
     document.getElementById("mkt-orders").textContent = monthOrders.length;
@@ -1772,7 +1776,7 @@
 
     // Best sellers
     const blendCounts = {};
-    completedOrders.forEach(o => {
+    paidOrders.forEach(o => {
       (o.items || []).forEach(i => {
         blendCounts[i.name] = (blendCounts[i.name] || 0) + (i.quantity || 1);
       });
@@ -1784,11 +1788,11 @@
             <span style="font-weight:700;">${i + 1}. ${name}</span>
             <span>${qty} units sold</span>
           </div>`).join("")
-      : `<div class="empty-state">No completed orders yet.</div>`;
+      : `<div class="empty-state">No completed, paid orders yet.</div>`;
 
     // Customer list
     const customerMap = {};
-    completedOrders.forEach(o => {
+    paidOrders.forEach(o => {
       const email = o.customer?.email || "unknown";
       if (!customerMap[email]) {
         customerMap[email] = { name: o.customer?.name || "—", email, orders: 0, total: 0 };
