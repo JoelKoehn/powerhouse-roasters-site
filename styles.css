@@ -1569,3 +1569,29 @@ h1, h2, h3{
 }
 .wh-cta-box h2 { color: #fff; font-size: 2rem; font-weight: 900; margin-bottom: 0.75rem; }
 .wh-cta-box p { opacity: 0.8; margin-bottom: 1.5rem; font-size: 1rem; }
+
+/* ── Trust Badges ── */
+.trust-badges {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba(0,0,0,0.08);
+}
+.trust-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: rgba(43,43,43,0.68);
+  white-space: nowrap;
+}
+.trust-badge svg { flex-shrink: 0; color: var(--gold-dark); }
+.trust-badges.on-dark .trust-badge { color: rgba(255,255,255,0.78); }
+.trust-badges.on-dark .trust-badge svg { color: var(--gold); }
+@media (max-width: 480px) {
+  .trust-badges { gap: 0.7rem 1rem; }
+}
