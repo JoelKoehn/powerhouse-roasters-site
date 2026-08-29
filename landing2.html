@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Powerhouse Roasters | The Christmas Gift That Became a Coffee Farm</title>
+  <meta name="description" content="Our kids gave Wes a $30 coffee roaster for Christmas. A few years later, it's Powerhouse Roasters — small-batch coffee roasted on our Wyoming farm." />
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png" />
+  <meta property="og:title" content="Our Kids Gave Dad a Coffee Roaster for Christmas. Here's What Happened Next." />
+  <meta property="og:description" content="A few years later, it's Powerhouse Roasters — small-batch coffee roasted on our Wyoming farm. Here's the real story." />
+  <meta property="og:image" content="https://powerhouseroasters.com/images/ranch-hero.jpg" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://powerhouseroasters.com/landing2.html" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* ── Story hero ── */
+    .story-hero {
+      min-height: 92vh;
+      display: flex;
+      align-items: flex-end;
+      background: linear-gradient(to bottom, rgba(10,10,10,0.15) 0%, rgba(10,10,10,0.35) 55%, rgba(10,10,10,0.86) 100%), url("images/ranch-hero.jpg") center 35% / cover no-repeat;
+      color: #fff;
+      padding: 3rem 0 4rem;
+    }
+    .story-hero-inner { max-width: 760px; margin: 0 auto; text-align: center; padding: 0 1.25rem; }
+    .story-kicker {
+      font-size: 0.78rem; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 1rem;
+    }
+    .story-hero h1 {
+      font-size: clamp(2.1rem, 5.2vw, 3.6rem);
+      font-weight: 900;
+      line-height: 1.12;
+      letter-spacing: -0.01em;
+      color: #fff;
+      margin-bottom: 1.1rem;
+      text-shadow: 0 12px 30px rgba(0,0,0,0.5);
+    }
+    .story-hero .sub {
+      font-size: 1.1rem;
+      color: rgba(255,255,255,0.9);
+      max-width: 46ch;
+      margin: 0 auto 1.75rem;
+    }
+    .scroll-cue {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-size: 0.82rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      color: rgba(255,255,255,0.75);
+      animation: bob 1.8s ease-in-out infinite;
+    }
+    @keyframes bob { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(6px); } }
+    @media (prefers-reduced-motion: reduce) { .scroll-cue { animation: none; } }
+
+    /* ── Story beats ── */
+    .beat {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+      padding: 4.5rem 0;
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .beat.in-view { opacity: 1; transform: translateY(0); }
+    .beat:nth-child(even) .beat-img { order: 2; }
+    .beat-img img {
+      width: 100%;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(0,0,0,0.08);
+    }
+    .beat-num {
+      font-size: 0.76rem; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--gold-dark); margin-bottom: 0.7rem; display: block;
+    }
+    .beat p {
+      font-size: clamp(1.15rem, 2.4vw, 1.5rem);
+      line-height: 1.6;
+      color: var(--text);
+      max-width: 42ch;
+    }
+    @media (max-width: 780px) {
+      .beat { grid-template-columns: 1fr; gap: 1.5rem; padding: 3rem 0; }
+      .beat:nth-child(even) .beat-img { order: 0; }
+    }
+
+    /* ── Pull quote turn ── */
+    .turn {
+      background: var(--navy, #14243F);
+      color: #F1EADA;
+      text-align: center;
+      padding: 5rem 1.5rem;
+    }
+    .turn blockquote {
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 800;
+      line-height: 1.3;
+      max-width: 720px;
+      margin: 0 auto 1.5rem;
+      font-style: italic;
+    }
+    .turn cite {
+      font-style: normal;
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold, #C8A24D);
+      font-weight: 700;
+    }
+
+    .payoff {
+      text-align: center;
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 4rem 1.25rem 1rem;
+    }
+    .payoff h2 { font-size: clamp(1.8rem, 4vw, 2.4rem); margin-bottom: 0.9rem; }
+    .payoff p { font-size: 1.08rem; color: var(--muted); line-height: 1.75; }
+
+    /* ── Trust strip (shared pattern) ── */
+    .trust-strip {
+      background: var(--bg-alt);
+      border-top: 1px solid rgba(0,0,0,0.06);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      padding: 0.9rem 0;
+      margin-top: 2rem;
+    }
+    .trust-strip .container { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.6rem 1.8rem; }
+    .trust-item { display: flex; align-items: center; gap: 0.45rem; font-size: 0.85rem; font-weight: 700; color: var(--text); white-space: nowrap; }
+    .trust-item .dot { color: var(--gold-dark); font-weight: 900; }
+
+    .spotlight { display: grid; grid-template-columns: 0.85fr 1fr; gap: 2.75rem; align-items: center; }
+    .spotlight-img { background: linear-gradient(to bottom, #f8f4ec, #f1eadc); border-radius: var(--radius-lg); border: 1px solid rgba(0,0,0,0.08); box-shadow: var(--shadow); padding: 2rem; }
+    .spotlight-img img { width: 100%; max-width: 340px; margin: 0 auto; display: block; }
+    .spotlight-eyebrow { color: var(--gold-dark); font-size: 0.78rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 0.6rem; display: block; }
+    .spotlight h2 { font-size: clamp(1.9rem, 3.5vw, 2.6rem); margin-bottom: 0.6rem; }
+    .spotlight-notes { color: var(--gold-dark); font-weight: 700; margin-bottom: 0.9rem; font-size: 1.02rem; }
+    .spotlight-desc { font-size: 1.05rem; line-height: 1.75; color: rgba(43,43,43,0.88); margin-bottom: 1.4rem; max-width: 46ch; }
+    .spotlight-price { font-size: 1.6rem; font-weight: 800; margin-bottom: 1.3rem; }
+    @media (max-width: 860px) { .spotlight { grid-template-columns: 1fr; gap: 1.75rem; } .spotlight-img { order: -1; } }
+  </style>
+</head>
+
+<body>
+
+  <header class="site-header">
+    <div class="container header-inner" style="justify-content:space-between;">
+      <div class="logo-area">
+        <img src="images/powerhouse-logo.png" alt="Powerhouse Roasters Logo" class="logo-img" />
+        <span class="site-title">POWERHOUSE ROASTERS</span>
+      </div>
+      <nav class="nav">
+        <a href="cart.html" class="cart-link">Cart <span class="cart-count">0</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HOOK -->
+  <section class="story-hero">
+    <div class="story-hero-inner">
+      <p class="story-kicker">A True Wyoming Story</p>
+      <h1>Our Kids Gave Dad a $30 Coffee Roaster for Christmas.</h1>
+      <p class="sub">We had no idea it would turn into this. Here's what actually happened.</p>
+      <a href="#beat-1" class="scroll-cue">Keep Reading ↓</a>
+    </div>
+  </section>
+
+  <!-- STORY BEATS -->
+  <div class="container">
+    <div class="beat" id="beat-1">
+      <div class="beat-img"><img src="images/ranch-hands.jpg" alt="Working the Wyoming farm" /></div>
+      <div>
+        <span class="beat-num">One</span>
+        <p>After long days on our Wyoming farm, Wes started spending evenings roasting small batches on that little Christmas roaster — experimenting, tweaking, serving cups to whoever would drink them.</p>
+      </div>
+    </div>
+
+    <div class="beat">
+      <div class="beat-img"><img src="images/rangeline-beans.jpg" alt="Freshly roasted coffee beans" /></div>
+      <div>
+        <span class="beat-num">Two</span>
+        <p>It wasn't fancy. No warehouse, no big equipment — just a farmer, a small roaster, and a whole lot of trial and error after the real work was done for the day.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- THE TURN -->
+  <div class="turn">
+    <blockquote>"Dad, other people need to taste this."</blockquote>
+    <cite>— Our son, one evening on the farm</cite>
+  </div>
+
+  <div class="payoff">
+    <h2>That's how Powerhouse Roasters started.</h2>
+    <p>Not in a fancy facility. In our home, on a Wyoming farm, after the work was done. We still roast in small batches. We still watch every single one. The goal is still the same as that first Christmas — make the best cup of coffee we know how to make.</p>
+  </div>
+
+  <!-- TRUST STRIP -->
+  <div class="trust-strip">
+    <div class="container">
+      <span class="trust-item"><span class="dot">✓</span> Full refund, no questions asked</span>
+      <span class="trust-item"><span class="dot">✓</span> Ships within 4 business days</span>
+      <span class="trust-item"><span class="dot">✓</span> Free shipping on orders $75+</span>
+      <span class="trust-item"><span class="dot">✓</span> Family-owned, Wyoming roasted</span>
+    </div>
+  </div>
+
+  <!-- FEATURED PRODUCT -->
+  <section class="section" id="featured">
+    <div class="container">
+      <div class="spotlight">
+        <div class="spotlight-img">
+          <img src="images/rangeline-bag.jpg" alt="Range Line Roast bag" />
+        </div>
+        <div>
+          <span class="spotlight-eyebrow">Where People Usually Start</span>
+          <h2>Range Line Roast</h2>
+          <p class="spotlight-notes">Milk chocolate • Caramel • Balanced finish</p>
+          <p class="spotlight-desc">
+            Our most-reordered coffee, every single week. Smooth, steady, and easy to come back to — named after the fence lines that cross Wyoming: dependable, always where it's supposed to be.
+          </p>
+          <p class="spotlight-price">$19.00</p>
+          <div class="hero-actions" style="justify-content:flex-start;">
+            <button class="btn btn-primary add-to-cart" data-product="Range Line Roast">Taste the Story — Add to Cart</button>
+            <a href="rangeline.html" class="btn btn-outline" style="color:var(--text); border-color:rgba(0,0,0,0.18); background:transparent;">Full Details</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ALL COFFEES -->
+  <section class="section section-alt" id="coffees">
+    <div class="container">
+      <div class="section-heading">
+        <h2 class="section-title">Six Coffees, One Farm</h2>
+        <p class="section-lead">Every one roasted in small batches, all built on the same promise: smooth, clean flavor with no bitterness.</p>
+      </div>
+
+      <div class="coffee-grid">
+        <article class="coffee-card">
+          <a href="fullpowerdark.html" class="coffee-card-link">
+            <img src="images/fpdark-bag.jpg" alt="Full Power Dark bag" class="coffee-card-image">
+            <div class="coffee-card-content">
+              <h3>Full Power Dark</h3>
+              <p class="coffee-notes">Dark chocolate • Roasted nuts • Heavy body</p>
+              <p class="coffee-description">Bold, low-acid, and built with depth.</p>
+              <p class="coffee-price">$19.00</p>
+            </div>
+          </a>
+          <div class="coffee-card-footer">
+            <span class="roast-pill">Medium-Dark Roast</span>
+            <div class="card-actions">
+              <a href="fullpowerdark.html" class="coffee-cta">View Coffee</a>
+              <button class="add-to-cart btn-add-card" data-product="Full Power Dark">Add to Cart</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="coffee-card">
+          <a href="brazil.html" class="coffee-card-link">
+            <img src="images/brazil-bag.jpg" alt="Brazil bag" class="coffee-card-image">
+            <div class="coffee-card-content">
+              <h3>Brazil</h3>
+              <p class="coffee-notes">Chocolate • Toasted almond • Caramel</p>
+              <p class="coffee-description">Grounded and dependable, smooth and familiar.</p>
+              <p class="coffee-price">$19.00</p>
+            </div>
+          </a>
+          <div class="coffee-card-footer">
+            <span class="roast-pill">Medium Roast</span>
+            <div class="card-actions">
+              <a href="brazil.html" class="coffee-cta">View Coffee</a>
+              <button class="add-to-cart btn-add-card" data-product="Brazil">Add to Cart</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="coffee-card">
+          <a href="guatemala.html" class="coffee-card-link">
+            <img src="images/guate-bag.jpg" alt="Guatemala bag" class="coffee-card-image">
+            <div class="coffee-card-content">
+              <h3>Guatemala</h3>
+              <p class="coffee-notes">Milk chocolate • Toffee • Red apple</p>
+              <p class="coffee-description">Structured and balanced with a crisp finish.</p>
+              <p class="coffee-price">$19.00</p>
+            </div>
+          </a>
+          <div class="coffee-card-footer">
+            <span class="roast-pill">Medium Roast</span>
+            <div class="card-actions">
+              <a href="guatemala.html" class="coffee-cta">View Coffee</a>
+              <button class="add-to-cart btn-add-card" data-product="Guatemala">Add to Cart</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="coffee-card">
+          <a href="ethiopia.html" class="coffee-card-link">
+            <img src="images/ethiopia-bag.jpg" alt="Ethiopia bag" class="coffee-card-image">
+            <div class="coffee-card-content">
+              <h3>Ethiopia</h3>
+              <p class="coffee-notes">Citrus • Floral notes • Clean sweetness</p>
+              <p class="coffee-description">Bright and precise without getting sharp.</p>
+              <p class="coffee-price">$19.00</p>
+            </div>
+          </a>
+          <div class="coffee-card-footer">
+            <span class="roast-pill">Light Roast</span>
+            <div class="card-actions">
+              <a href="ethiopia.html" class="coffee-cta">View Coffee</a>
+              <button class="add-to-cart btn-add-card" data-product="Ethiopia">Add to Cart</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="coffee-card">
+          <a href="stillwaterdecaf.html" class="coffee-card-link">
+            <img src="images/swater-bag.jpg" alt="Stillwater Decaf bag" class="coffee-card-image">
+            <div class="coffee-card-content">
+              <h3>Stillwater Decaf</h3>
+              <p class="coffee-notes">Cocoa • Brown sugar • Toasted nuts</p>
+              <p class="coffee-description">Full character, no caffeine.</p>
+              <p class="coffee-price">$19.00</p>
+            </div>
+          </a>
+          <div class="coffee-card-footer">
+            <span class="roast-pill">Medium Roast</span>
+            <div class="card-actions">
+              <a href="stillwaterdecaf.html" class="coffee-cta">View Coffee</a>
+              <button class="add-to-cart btn-add-card" data-product="Stillwater Decaf">Add to Cart</button>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- GUARANTEE REINFORCEMENT -->
+  <section class="section">
+    <div class="container">
+      <div class="wh-cta-box">
+        <h2>Try It Risk-Free</h2>
+        <p>Not your cup? Full refund, no questions asked — within 30 days of delivery. We guarantee your order ships within 4 business days, usually just 2.</p>
+        <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+          <a href="#featured" class="btn btn-primary">Shop Now</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div style="display:flex; gap:1.25rem; justify-content:center; flex-wrap:wrap; margin-bottom:0.75rem; font-size:0.85rem;">
+        <a href="shipping.html">Shipping &amp; Returns</a>
+        <a href="faq.html">FAQ</a>
+        <a href="index.html#contact">Contact</a>
+      </div>
+      <p>&copy; <span id="year"></span> Powerhouse Roasters. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    // Fade-in story beats as they scroll into view
+    var beats = document.querySelectorAll(".beat");
+    if ("IntersectionObserver" in window && beats.length) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in-view");
+            io.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.2 });
+      beats.forEach(function (b) { io.observe(b); });
+    } else {
+      beats.forEach(function (b) { b.classList.add("in-view"); });
+    }
+  </script>
+  <script src="cart.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
