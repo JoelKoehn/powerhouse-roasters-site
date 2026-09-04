@@ -1,5 +1,11 @@
 // Email popup + banner — 10s delay or exit intent, suppressed by cookie for 30 days
 (function () {
+  // Paused until Mailchimp (or whatever email platform we land on) is actually
+  // connected — right now a signup here doesn't reach any real list. Flip
+  // this back to true once that's wired up.
+  const ENABLED = false;
+  if (!ENABLED) return;
+
   const COOKIE_NAME = "ph_popup_dismissed";
   const DISCOUNT_CODE = "POWERHOUSE10";
 
