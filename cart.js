@@ -362,9 +362,41 @@ function bindAddToCartButtons() {
   });
 }
 
+function bindMobileNavToggle() {
+  const toggle = document.getElementById("nav-toggle");
+  const nav = document.getElementById("site-nav");
+  const scrim = document.getElementById("nav-scrim");
+  if (!toggle || !nav) return;
+
+  function closeNav() {
+    nav.classList.remove("nav-open");
+    if (scrim) scrim.classList.remove("nav-scrim-open");
+    toggle.classList.remove("open");
+    toggle.setAttribute("aria-expanded", "false");
+    document.body.style.overflow = "";
+  }
+  function openNav() {
+    nav.classList.add("nav-open");
+    if (scrim) scrim.classList.add("nav-scrim-open");
+    toggle.classList.add("open");
+    toggle.setAttribute("aria-expanded", "true");
+    document.body.style.overflow = "hidden";
+  }
+
+  toggle.addEventListener("click", function () {
+    if (nav.classList.contains("nav-open")) closeNav(); else openNav();
+  });
+  if (scrim) scrim.addEventListener("click", closeNav);
+  nav.querySelectorAll("a").forEach(a => a.addEventListener("click", closeNav));
+  window.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") closeNav();
+  });
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   injectCartDrawer();
   updateCartCount();
   bindAddToCartButtons();
   renderCartPage();
+  bindMobileNavToggle();
 });
