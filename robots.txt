@@ -1,9 +1,13 @@
 User-agent: *
 Allow: /
 Disallow: /dashboard.html
+Disallow: /dashboard
 Disallow: /cart.html
+Disallow: /cart
 Disallow: /thank-you.html
+Disallow: /thank-you
 Disallow: /cancel.html
+Disallow: /cancel
 Disallow: /.netlify/
 
 Sitemap: https://powerhouseroasters.com/sitemap.xml

@@ -1,10 +1,32 @@
 functionsDirectory = "netlify/functions"
 functionsDirectoryOrigin = "default"
 plugins = []
-redirects = []
+
+# Google indexed the extensionless "pretty" URLs on its own (e.g. /ethiopia, not
+# /ethiopia.html) and ignored our declared canonical -- Netlify was serving both
+# forms with no redirect, a duplicate-content signal that was stalling indexing
+# (Search Console: "Duplicate, Google chose different canonical than user", found
+# 2026-10-18). These force a real 301 to the form Google already prefers, so the
+# two URLs collapse into one instead of competing.
+[[redirects]]
+  from = "/index.html"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/:page.html"
+  to = "/:page"
+  status = 301
+  force = true
 
 [[headers]]
   for = "/dashboard.html"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
+[[headers]]
+  for = "/dashboard"
   [headers.values]
     X-Robots-Tag = "noindex"
 
