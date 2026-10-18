@@ -8,6 +8,11 @@ plugins = []
 # (Search Console: "Duplicate, Google chose different canonical than user", found
 # 2026-10-18). These force a real 301 to the form Google already prefers, so the
 # two URLs collapse into one instead of competing.
+# Netlify redirects only support :splat from a trailing "/*" wildcard, not named
+# params like ":page" extracted mid-pattern -- that earlier attempt here actually
+# redirected everything to the literal, broken path "/:page" (caught and fixed
+# within minutes via curl -I, 2026-10-18). Every page is listed explicitly instead;
+# there are few enough that this is also just plainly easier to verify is correct.
 [[redirects]]
   from = "/index.html"
   to = "/"
@@ -15,8 +20,86 @@ plugins = []
   force = true
 
 [[redirects]]
-  from = "/:page.html"
-  to = "/:page"
+  from = "/fullpowerdark.html"
+  to = "/fullpowerdark"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/rangeline.html"
+  to = "/rangeline"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/brazil.html"
+  to = "/brazil"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/guatemala.html"
+  to = "/guatemala"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/ethiopia.html"
+  to = "/ethiopia"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/stillwaterdecaf.html"
+  to = "/stillwaterdecaf"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/our-story.html"
+  to = "/our-story"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/wholesale.html"
+  to = "/wholesale"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/faq.html"
+  to = "/faq"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/shipping.html"
+  to = "/shipping"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/dashboard.html"
+  to = "/dashboard"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/cart.html"
+  to = "/cart"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/thank-you.html"
+  to = "/thank-you"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/cancel.html"
+  to = "/cancel"
   status = 301
   force = true
 
