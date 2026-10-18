@@ -27,14 +27,14 @@ Powerhouse Roasters roasts coffee in small batches on their working farm rather 
 
 ## Pages
 
-- [Home](https://powerhouseroasters.com/index.html): overview of all six coffees, brand story summary, subscription offer, wholesale link, contact form
-- [Full Power Dark](https://powerhouseroasters.com/fullpowerdark.html): product detail and purchase
-- [Range Line Roast](https://powerhouseroasters.com/rangeline.html): product detail and purchase
-- [Brazil](https://powerhouseroasters.com/brazil.html): product detail and purchase
-- [Guatemala](https://powerhouseroasters.com/guatemala.html): product detail and purchase
-- [Ethiopia](https://powerhouseroasters.com/ethiopia.html): product detail and purchase
-- [Stillwater Decaf](https://powerhouseroasters.com/stillwaterdecaf.html): product detail and purchase
-- [Our Story](https://powerhouseroasters.com/our-story.html): the founding story of the roastery
-- [Wholesale](https://powerhouseroasters.com/wholesale.html): wholesale pricing tiers, FAQ, and inquiry form for business accounts
-- [Shipping & Returns](https://powerhouseroasters.com/shipping.html): shipping area, cost, timing, and the guarantee/refund process
-- [FAQ](https://powerhouseroasters.com/faq.html): answers about roasting, freshness, grind options, subscriptions, shipping, and wholesale
+- [Home](https://powerhouseroasters.com/): overview of all six coffees, brand story summary, subscription offer, wholesale link, contact form
+- [Full Power Dark](https://powerhouseroasters.com/fullpowerdark): product detail and purchase
+- [Range Line Roast](https://powerhouseroasters.com/rangeline): product detail and purchase
+- [Brazil](https://powerhouseroasters.com/brazil): product detail and purchase
+- [Guatemala](https://powerhouseroasters.com/guatemala): product detail and purchase
+- [Ethiopia](https://powerhouseroasters.com/ethiopia): product detail and purchase
+- [Stillwater Decaf](https://powerhouseroasters.com/stillwaterdecaf): product detail and purchase
+- [Our Story](https://powerhouseroasters.com/our-story): the founding story of the roastery
+- [Wholesale](https://powerhouseroasters.com/wholesale): wholesale pricing tiers, FAQ, and inquiry form for business accounts
+- [Shipping & Returns](https://powerhouseroasters.com/shipping): shipping area, cost, timing, and the guarantee/refund process
+- [FAQ](https://powerhouseroasters.com/faq): answers about roasting, freshness, grind options, subscriptions, shipping, and wholesale
