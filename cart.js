@@ -91,6 +91,15 @@ function addToCart(productName, grind = "whole-bean", qty = 1) {
 
   saveCart(cart);
   openCartDrawer();
+
+  if (window.fbq) {
+    fbq('track', 'AddToCart', {
+      content_name: product.name,
+      content_type: 'product',
+      value: (product.price * qty) / 100,
+      currency: 'USD'
+    });
+  }
 }
 
 function removeFromCart(productName, grind) {
